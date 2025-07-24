@@ -3,7 +3,7 @@ name = "ask-app"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.13"
 dependencies = [
     "alembic>=1.16.2",
     "asyncpg>=0.30.0",
