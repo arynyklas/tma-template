@@ -29,6 +29,7 @@ class AuthConfig(BaseModel):
     algorithm: str
     access_token_expire_minutes: int
 
+
 class TelegramConfig(BaseModel):
     bot_token: str
 

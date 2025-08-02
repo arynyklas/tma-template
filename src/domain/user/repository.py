@@ -11,6 +11,7 @@ class CreateUserDTO(TypedDict):
     is_premium: bool
     photo_url: str
 
+
 class UpdateUserDTO(TypedDict):
     username: str | None
     first_name: str
@@ -28,7 +29,9 @@ class UserRepository(Protocol):
     async def get_user(self, identifier: int, by: str = Literal["id"]) -> User: ...
 
     @overload
-    async def get_user(self, identifier: str, by: str = Literal["username"]) -> User: ...
+    async def get_user(
+        self, identifier: str, by: str = Literal["username"]
+    ) -> User: ...
 
     @abstractmethod
     async def get_user(
