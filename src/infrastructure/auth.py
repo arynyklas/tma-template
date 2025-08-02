@@ -15,8 +15,10 @@ class AuthServiceImpl(AuthService):
     def validate_init_data(self, init_data: str) -> InitDataDTO:
         # todo - cover with tests
         try:
-            parsed_data = safe_parse_webapp_init_data(self.config.telegram.bot_token, init_data)
-        except ValueError as e:
+            parsed_data = safe_parse_webapp_init_data(
+                self.config.telegram.bot_token, init_data
+            )
+        except ValueError:
             error_msg = f"Invalid init data '{init_data}'"
             raise ValidationError(message=error_msg)
 
@@ -39,7 +41,8 @@ class AuthServiceImpl(AuthService):
         # todo - cover with tests
         to_encode = {
             "sub": str(user_id),
-            "exp": datetime.now(UTC) + timedelta(minutes=self.config.auth.access_token_expire_minutes),
+            "exp": datetime.now(UTC)
+            + timedelta(minutes=self.config.auth.access_token_expire_minutes),
         }
         encoded_jwt = encode(
             to_encode,

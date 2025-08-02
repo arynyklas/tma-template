@@ -25,24 +25,32 @@ class UserRepositoryImpl(UserRepository, BaseSQLAlchemyRepo):
         return user_model.to_domain() if user_model else None
 
     async def create_user(self, user: CreateUserDTO) -> User:
-        stmt = insert(UserModel).values(
-            id=user["id"],
-            username=user["username"],
-            first_name=user["first_name"],
-            last_name=user["last_name"],
-        ).returning(UserModel)
+        stmt = (
+            insert(UserModel)
+            .values(
+                id=user["id"],
+                username=user["username"],
+                first_name=user["first_name"],
+                last_name=user["last_name"],
+            )
+            .returning(UserModel)
+        )
 
         result = await self._session.execute(stmt)
         orm_model = result.scalar_one()
         return orm_model.to_domain()
 
     async def update_user(self, user_id: int, **fields: Unpack[UpdateUserDTO]) -> User:
-        stmt = update(UserModel).values(
-            id=user_id,
-            username=fields["username"],
-            first_name=fields["first_name"],
-            last_name=fields["last_name"],
-        ).returning(UserModel)
+        stmt = (
+            update(UserModel)
+            .values(
+                id=user_id,
+                username=fields["username"],
+                first_name=fields["first_name"],
+                last_name=fields["last_name"],
+            )
+            .returning(UserModel)
+        )
         result = await self._session.execute(stmt)
         orm_model = result.scalar_one()
         return orm_model.to_domain()

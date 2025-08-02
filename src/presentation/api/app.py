@@ -24,7 +24,7 @@ def create_app() -> Litestar:
         exception_handlers={
             Exception: custom_exception_handler,
             ValidationError: validation_error_handler,
-        }
+        },
     )
 
     container = make_async_container(
