@@ -4,7 +4,6 @@ from src.application.common.interactor import Interactor
 from src.application.common.transaction import TransactionManager
 from src.application.interfaces.auth import AuthService, InitDataDTO
 from src.domain.user import (
-    User,
     CreateUserDTO,
     UserRepository,
 )
@@ -18,7 +17,6 @@ class AuthTgInputDTO:
 @dataclass
 class AuthTgOutputDTO:
     access_token: str
-    user: User
 
 
 class AuthTgInteractor(Interactor[AuthTgInputDTO, AuthTgOutputDTO]):
@@ -38,7 +36,7 @@ class AuthTgInteractor(Interactor[AuthTgInputDTO, AuthTgOutputDTO]):
 
         user = await self.user_repository.get_user(parsed_data.user_id, by='id')
         if user is None:
-            user = await self.user_repository.create_user(
+            await self.user_repository.create_user(
                 CreateUserDTO(
                     id=parsed_data.user_id,
                     username=parsed_data.username,
@@ -65,5 +63,4 @@ class AuthTgInteractor(Interactor[AuthTgInputDTO, AuthTgOutputDTO]):
         )
         return AuthTgOutputDTO(
             access_token=access_token,
-            user=user,
         )

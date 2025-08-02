@@ -33,7 +33,7 @@ class UserRepository(Protocol):
     @abstractmethod
     async def get_user(
         self, identifier: int | str, by: Literal["id", "username"] = "id"
-    ) -> User:
+    ) -> User | None:
         raise NotImplementedError
 
     @abstractmethod

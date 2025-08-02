@@ -15,8 +15,8 @@ async def auth_user_handler(
     data: AuthTgRequest,
     interactor: FromDishka[AuthTgInteractor],
 ) -> dict:
-    await interactor(AuthTgInputDTO(data.init_data))
-    return {"success": True, "message": "Service is healthy"}
+    response = await interactor(AuthTgInputDTO(data.init_data))
+    return response
 
 
 auth_router = Router(
