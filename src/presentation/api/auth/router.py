@@ -15,7 +15,7 @@ async def auth_user_handler(
     data: AuthTgRequest,
     interactor: FromDishka[AuthTgInteractor],
 ) -> dict:
-    await interactor(AuthTgInputDTO('iasdfadsf'))
+    await interactor(AuthTgInputDTO(data.init_data))
     return {"success": True, "message": "Service is healthy"}
 
 
