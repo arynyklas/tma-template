@@ -47,3 +47,17 @@ status:
 
 api:
     uvicorn src.presentation.api.app:create_app --factory --port 8080 --reload
+
+test:
+    docker compose -f docker-compose-test.yml up --build -d
+    pytest
+
+just test-db-up:
+    docker compose -f docker-compose-test.yml up --build -d
+
+just test-db-down:
+    docker compose -f docker-compose-test.yml down
+
+just test-db-reset:
+    docker compose -f docker-compose-test.yml down
+    docker compose -f docker-compose-test.yml up --build -d
