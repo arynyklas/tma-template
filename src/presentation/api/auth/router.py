@@ -1,15 +1,19 @@
 import logging
 
-from litestar import Request, Router, post
+from dishka.integrations.litestar import inject, FromDishka
+from litestar import Router, post
 
+from src.application.auth.tg import AuthTgInteractor
 from src.presentation.api.auth.schemas import AuthTgRequest
 
 logger = logging.getLogger(__name__)
 
 
 @post("/")
+@inject
 async def auth_user_handler(
-        data: AuthTgRequest
+    data: AuthTgRequest,
+    interactor: FromDishka[AuthTgInteractor],
 ) -> dict:
     return {"success": True, "message": "Service is healthy"}
 

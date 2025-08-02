@@ -1,23 +1,47 @@
-from typing import Literal, Protocol, overload
+from abc import abstractmethod
+from typing import Literal, Protocol, overload, TypedDict, Unpack
 from src.domain.user.entity import User
 
 
+class CreateUserDTO(TypedDict):
+    id: int
+    username: str | None
+    first_name: str
+    last_name: str | None
+    is_premium: bool
+    photo_url: str
+
+class UpdateUserDTO(TypedDict):
+    username: str | None
+    first_name: str
+    last_name: str | None
+    is_premium: bool
+    photo_url: str
+
+
 class UserRepository(Protocol):
+    # todo - fix type hints in get_user method
     @overload
-    def get_user(self, identifier: str) -> User: ...
-
-    @overload
-    def get_user(self, identifier: str, by: Literal["id"]) -> User: ...
+    async def get_user(self, identifier: str) -> User: ...
 
     @overload
-    def get_user(self, identifier: str, by: Literal["username"]) -> User: ...
+    async def get_user(self, identifier: int, by: str = Literal["id"]) -> User: ...
 
-    def get_user(
-        self, identifier: str, by: Literal["id", "username"] = "id"
-    ) -> User: ...
+    @overload
+    async def get_user(self, identifier: str, by: str = Literal["username"]) -> User: ...
 
-    def create_user(self, user: User) -> User: ...
+    @abstractmethod
+    async def get_user(
+        self, identifier: int | str, by: Literal["id", "username"] = "id"
+    ) -> User:
+        raise NotImplementedError
 
-    def update_user(self, user: User) -> User: ...
+    @abstractmethod
+    async def create_user(self, user: CreateUserDTO) -> User:
+        raise NotImplementedError
 
-    def delete_user(self, user_id: str) -> None: ...
+    @abstractmethod
+    async def update_user(self, user_id: int, **fields: Unpack[UpdateUserDTO]) -> User:
+        raise NotImplementedError
+
+    async def delete_user(self, user_id: str) -> None: ...

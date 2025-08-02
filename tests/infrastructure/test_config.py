@@ -6,7 +6,7 @@ import pytest
 import yaml
 from pydantic import ValidationError
 
-from src.infrastructure.config import PostgresConfig, Config, load_config
+from src.infrastructure.config import PostgresConfig, AuthConfig, Config, load_config
 
 
 class TestPostgresConfig:
@@ -141,6 +141,47 @@ class TestPostgresConfig:
         assert config.port == 65535
 
 
+class TestAuthConfig:
+    def test_valid_config(self):
+        config = AuthConfig(
+            secret_key="test_secret_key",
+            algorithm="HS256",
+            access_token_expire_minutes=30
+        )
+        
+        assert config.secret_key == "test_secret_key"
+        assert config.algorithm == "HS256"
+        assert config.access_token_expire_minutes == 30
+
+    def test_missing_required_fields(self):
+        with pytest.raises(ValidationError):
+            AuthConfig()
+
+    def test_invalid_expire_minutes_type(self):
+        with pytest.raises(ValidationError):
+            AuthConfig(
+                secret_key="test_secret_key",
+                algorithm="HS256",
+                access_token_expire_minutes="invalid"
+            )
+
+    def test_negative_expire_minutes(self):
+        config = AuthConfig(
+            secret_key="test_secret_key",
+            algorithm="HS256",
+            access_token_expire_minutes=-1
+        )
+        assert config.access_token_expire_minutes == -1
+
+    def test_zero_expire_minutes(self):
+        config = AuthConfig(
+            secret_key="test_secret_key",
+            algorithm="HS256",
+            access_token_expire_minutes=0
+        )
+        assert config.access_token_expire_minutes == 0
+
+
 class TestConfig:
     def test_valid_config(self):
         postgres_config = PostgresConfig(
@@ -150,9 +191,15 @@ class TestConfig:
             password="pass",
             db="db"
         )
+        auth_config = AuthConfig(
+            secret_key="test_secret_key",
+            algorithm="HS256",
+            access_token_expire_minutes=30
+        )
         
-        config = Config(postgres=postgres_config)
+        config = Config(postgres=postgres_config, auth=auth_config)
         assert config.postgres == postgres_config
+        assert config.auth == auth_config
 
     def test_missing_postgres_config(self):
         with pytest.raises(ValidationError):
@@ -173,6 +220,11 @@ class TestLoadConfig:
                 "password": "test_pass",
                 "db": "test_db",
                 "echo": True
+            },
+            "auth": {
+                "secret_key": "test_secret_key",
+                "algorithm": "HS256",
+                "access_token_expire_minutes": 30
             }
         }
         
@@ -190,6 +242,9 @@ class TestLoadConfig:
             assert config.postgres.password == "test_pass"
             assert config.postgres.db == "test_db"
             assert config.postgres.echo is True
+            assert config.auth.secret_key == "test_secret_key"
+            assert config.auth.algorithm == "HS256"
+            assert config.auth.access_token_expire_minutes == 30
         finally:
             Path(temp_file).unlink()
 
@@ -201,6 +256,11 @@ class TestLoadConfig:
                 "user": "user",
                 "password": "pass",
                 "db": "db"
+            },
+            "auth": {
+                "secret_key": "test_secret_key",
+                "algorithm": "HS256",
+                "access_token_expire_minutes": 30
             }
         }
         
@@ -212,6 +272,7 @@ class TestLoadConfig:
                 
                 assert isinstance(config, Config)
                 assert config.postgres.host == "localhost"
+                assert config.auth.secret_key == "test_secret_key"
 
     def test_load_config_missing_file(self):
         with pytest.raises(FileNotFoundError):
@@ -292,6 +353,11 @@ class TestLoadConfig:
                 "db": "db",
                 "extra_field": "ignored"
             },
+            "auth": {
+                "secret_key": "test_secret_key",
+                "algorithm": "HS256",
+                "access_token_expire_minutes": 30
+            },
             "extra_config": "ignored"
         }
         
@@ -315,6 +381,11 @@ class TestLoadConfig:
                 "password": "pass",
                 "db": "db",
                 "echo": False
+            },
+            "auth": {
+                "secret_key": "test_secret_key",
+                "algorithm": "HS256",
+                "access_token_expire_minutes": 30
             }
         }
         
@@ -334,6 +405,11 @@ class TestLoadConfig:
                 "user": "user",
                 "password": "pass",
                 "db": "db"
+            },
+            "auth": {
+                "secret_key": "test_secret_key",
+                "algorithm": "HS256",
+                "access_token_expire_minutes": 30
             }
         }
         

@@ -5,3 +5,8 @@ postgres:
   password: "dev_password"
   db: "ask_app"
   echo: true
+
+auth:
+  secret_key: "secret"
+  algorithm: "HS256"
+  access_token_expire_minutes: 30

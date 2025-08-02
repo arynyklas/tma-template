@@ -24,8 +24,15 @@ class PostgresConfig(BaseModel):
         return v
 
 
+class AuthConfig(BaseModel):
+    secret_key: str
+    algorithm: str
+    access_token_expire_minutes: int
+
+
 class Config(BaseModel):
     postgres: PostgresConfig
+    auth: AuthConfig
 
 
 def load_config(file_name: str = "config.yaml") -> Config:
