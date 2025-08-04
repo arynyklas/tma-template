@@ -1,7 +1,8 @@
 from datetime import UTC, datetime, timedelta
 
 from aiogram.utils.web_app import safe_parse_webapp_init_data
-from jose.jwt import encode
+from jose import ExpiredSignatureError, JWTError
+from jose.jwt import encode, decode
 
 from src.application.auth.exceptions import InvalidInitDataError
 from src.application.common.exceptions import ValidationError
@@ -54,3 +55,23 @@ class AuthServiceImpl(AuthService):
             headers={"kid": "main"},
         )
         return encoded_jwt
+
+    def validate_access_token(self, token: str) -> int:
+        """Validate JWT token and return user_id if valid."""
+        try:
+            payload = decode(
+                token,
+                self.config.auth.secret_key,
+                algorithms=[self.config.auth.algorithm],
+            )
+            user_id_str = payload.get("sub")
+            if user_id_str is None:
+                raise ValidationError("Token missing subject")
+
+            return int(user_id_str)
+        except ExpiredSignatureError:
+            raise ValidationError("Token has expired")
+        except JWTError:
+            raise ValidationError("Invalid token")
+        except (ValueError, TypeError):
+            raise ValidationError("Invalid user ID in token")

@@ -23,3 +23,8 @@ class AuthService(Protocol):
     @abstractmethod
     def create_access_token(self, user_id: int) -> str:
         raise NotImplementedError
+
+    @abstractmethod
+    def validate_access_token(self, token: str) -> int:
+        """Validate JWT token and return user_id if valid."""
+        raise NotImplementedError
