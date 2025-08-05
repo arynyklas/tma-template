@@ -22,17 +22,18 @@ class UpdateUserDTO(TypedDict):
 
 
 class UserRepository(Protocol):
-    # todo - fix type hints in get_user method
     @overload
-    async def get_user(self, identifier: str) -> User: ...
+    async def get_user(self, identifier: str) -> User | None: ...
 
     @overload
-    async def get_user(self, identifier: int, by: str = Literal["id"]) -> User: ...
+    async def get_user(
+        self, identifier: int, by: str = Literal["id"]
+    ) -> User | None: ...
 
     @overload
     async def get_user(
         self, identifier: str, by: str = Literal["username"]
-    ) -> User: ...
+    ) -> User | None: ...
 
     @abstractmethod
     async def get_user(
