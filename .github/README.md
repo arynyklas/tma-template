@@ -49,5 +49,5 @@ python -m src.presentation.bot.main
 # Setup Pre-Commit
 ### 1. Initialize pre-commit
 ```shell
-pre-commit
+pre-commit install
 ```
