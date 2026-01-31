@@ -1,12 +1,19 @@
 from datetime import datetime
 
-from sqlalchemy import TIMESTAMP, func
+from sqlalchemy import TIMESTAMP, ForeignKey, func
 from sqlalchemy.orm import Mapped, mapped_column
 
-from src.domain.user.vo import Bio, FirstName, LastName, UserId, Username
+from src.domain.user.vo import Bio, FirstName, LastName, ReferralCount, UserId, Username
 
 from .base import BaseORMModel
-from .types.user import BioType, FirstNameType, LastNameType, UserIdType, UsernameType
+from .types.user import (
+    BioType,
+    FirstNameType,
+    LastNameType,
+    ReferralCountType,
+    UserIdType,
+    UsernameType,
+)
 
 
 class UserModel(BaseORMModel):
@@ -27,4 +34,10 @@ class UserModel(BaseORMModel):
     )
     last_login_at: Mapped[datetime] = mapped_column(
         TIMESTAMP(timezone=True), server_default=func.now()
+    )
+    referred_by: Mapped[UserId | None] = mapped_column(
+        UserIdType, ForeignKey("users.id"), nullable=True
+    )
+    referral_count: Mapped[ReferralCount] = mapped_column(
+        ReferralCountType, nullable=False, server_default="0"
     )
