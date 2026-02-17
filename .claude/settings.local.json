@@ -20,5 +20,9 @@
       "Bash(ruff:*)"
     ],
     "deny": []
+  },
+  "attribution": {
+    "commit": "\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "pr": "\n\nCo-Authored-By: Claude <noreply@anthropic.com>"
   }
 }
