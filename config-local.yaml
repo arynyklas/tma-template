@@ -5,7 +5,6 @@ telegram:
   admin_ids: [1,2,3,4]
   bot_username: "my_bot_username"
 
-
 postgres:
   host: "localhost"
   port: 5435
