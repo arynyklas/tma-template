@@ -8,8 +8,8 @@ Create Date: 2025-06-24 01:45:18.536689
 
 from collections.abc import Sequence
 
-import sqlalchemy as sa
 from alembic import op
+import sqlalchemy as sa
 
 from src.infrastructure.db.models.types.user import (
     BioType,

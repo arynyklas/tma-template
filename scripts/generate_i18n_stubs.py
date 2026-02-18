@@ -5,8 +5,8 @@ This script parses .ftl files and generates a .pyi stub file
 that provides IDE autocomplete for translation keys.
 """
 
-import re
 from pathlib import Path
+import re
 
 
 def extract_ftl_keys(ftl_content: str) -> list[tuple[str, list[str]]]:

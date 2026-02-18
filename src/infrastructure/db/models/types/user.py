@@ -1,4 +1,4 @@
-from sqlalchemy import BIGINT, INTEGER, Dialect, String, TypeDecorator
+from sqlalchemy import BIGINT, INTEGER, String
 
 from src.domain.user.vo import (
     Bio,
@@ -10,147 +10,53 @@ from src.domain.user.vo import (
     Username,
 )
 
+from .base import VOType
 
-class UserIdType(TypeDecorator):
+
+class UserIdType(VOType):
     impl = BIGINT
+    vo_class = UserId
+    vo_raw = int
     cache_ok = True
 
-    def process_bind_param(
-        self, value: UserId | int | None, dialect: Dialect
-    ) -> int | None:
-        if value is None:
-            return None
-        if isinstance(value, UserId):
-            return value.value
-        return value
 
-    def process_result_value(
-        self, value: int | None, dialect: Dialect
-    ) -> UserId | None:
-        if value is None:
-            return None
-        return UserId(value)
-
-
-class FirstNameType(TypeDecorator):
+class FirstNameType(VOType):
     impl = String(64)
+    vo_class = FirstName
+    vo_raw = str
     cache_ok = True
 
-    def process_bind_param(
-        self, value: FirstName | str | None, dialect: Dialect
-    ) -> str | None:
-        if value is None:
-            return None
-        if isinstance(value, FirstName):
-            return value.value
-        return value
 
-    def process_result_value(
-        self, value: str | None, dialect: Dialect
-    ) -> FirstName | None:
-        if value is None:
-            return None
-        return FirstName(value)
-
-
-class LastNameType(TypeDecorator):
+class LastNameType(VOType):
     impl = String(64)
+    vo_class = LastName
+    vo_raw = str
     cache_ok = True
 
-    def process_bind_param(
-        self, value: LastName | str | None, dialect: Dialect
-    ) -> str | None:
-        if value is None:
-            return None
-        if isinstance(value, LastName):
-            return value.value
-        return value
 
-    def process_result_value(
-        self, value: str | None, dialect: Dialect
-    ) -> LastName | None:
-        if value is None:
-            return None
-        return LastName(value)
-
-
-class UsernameType(TypeDecorator):
+class UsernameType(VOType):
     impl = String(32)
+    vo_class = Username
+    vo_raw = str
     cache_ok = True
 
-    def process_bind_param(
-        self, value: Username | str | None, dialect: Dialect
-    ) -> str | None:
-        if value is None:
-            return None
-        if isinstance(value, Username):
-            return value.value
-        return value
 
-    def process_result_value(
-        self, value: str | None, dialect: Dialect
-    ) -> Username | None:
-        if value is None:
-            return None
-        return Username(value)
-
-
-class BioType(TypeDecorator):
+class BioType(VOType):
     impl = String(160)
+    vo_class = Bio
+    vo_raw = str
     cache_ok = True
 
-    def process_bind_param(
-        self, value: Bio | str | None, dialect: Dialect
-    ) -> str | None:
-        if value is None:
-            return None
-        if isinstance(value, Bio):
-            return value.value
-        return value
 
-    def process_result_value(self, value: str | None, dialect: Dialect) -> Bio | None:
-        if value is None:
-            return None
-        return Bio(value)
-
-
-class ReferralCountType(TypeDecorator):
+class ReferralCountType(VOType):
     impl = INTEGER
+    vo_class = ReferralCount
+    vo_raw = int
     cache_ok = True
 
-    def process_bind_param(
-        self, value: ReferralCount | int | None, dialect: Dialect
-    ) -> int | None:
-        if value is None:
-            return None
-        if isinstance(value, ReferralCount):
-            return value.value
-        return value
 
-    def process_result_value(
-        self, value: int | None, dialect: Dialect
-    ) -> ReferralCount | None:
-        if value is None:
-            return None
-        return ReferralCount(value)
-
-
-class LanguageCodeType(TypeDecorator):
+class LanguageCodeType(VOType):
     impl = String(5)
+    vo_class = LanguageCode
+    vo_raw = str
     cache_ok = True
-
-    def process_bind_param(
-        self, value: LanguageCode | str | None, dialect: Dialect
-    ) -> str | None:
-        if value is None:
-            return None
-        if isinstance(value, LanguageCode):
-            return value.value
-        return value
-
-    def process_result_value(
-        self, value: str | None, dialect: Dialect
-    ) -> LanguageCode | None:
-        if value is None:
-            return None
-        return LanguageCode(value)

@@ -1,7 +1,7 @@
 import asyncio
-import logging
 from collections.abc import AsyncGenerator
 from dataclasses import dataclass
+import logging
 
 from aiogram import Bot
 from aiogram.enums import ChatAction

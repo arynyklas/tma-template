@@ -1,7 +1,7 @@
 from pathlib import Path
 
-import yaml
 from pydantic import BaseModel, field_validator
+import yaml
 
 
 class PostgresConfig(BaseModel):
