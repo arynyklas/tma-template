@@ -1,6 +1,6 @@
 from collections.abc import AsyncIterable
 
-from dishka import Provider, Scope, from_context, provide
+from dishka import Provider, Scope, provide
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker
 
 from src.application.common.transaction import TransactionManager
@@ -14,8 +14,6 @@ from src.infrastructure.db.transaction import TransactionManagerImpl
 
 class DBProvider(Provider):
     scope = Scope.APP
-
-    config = from_context(provides=Config)
 
     @provide(scope=Scope.APP)
     async def get_engine(self, config: Config) -> AsyncIterable[AsyncEngine]:
