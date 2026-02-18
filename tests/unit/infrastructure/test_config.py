@@ -1,10 +1,10 @@
-import tempfile
 from pathlib import Path
+import tempfile
 from unittest.mock import mock_open, patch
 
+from pydantic import ValidationError
 import pytest
 import yaml
-from pydantic import ValidationError
 
 from src.infrastructure.config import (
     AuthConfig,

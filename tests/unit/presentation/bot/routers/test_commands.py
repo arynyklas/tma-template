@@ -1,10 +1,10 @@
 from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock
 
-import pytest
 from aiogram.filters import CommandObject
 from aiogram.types import Message, User
 from fluentogram import TranslatorHub
+import pytest
 
 from src.application.referral.process import ProcessReferralInteractor
 from src.application.user.dtos import CreateUserOutputDTO

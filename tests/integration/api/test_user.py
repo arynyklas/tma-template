@@ -1,7 +1,7 @@
 from http import HTTPStatus
 
-import pytest
 from httpx import AsyncClient
+import pytest
 
 from src.infrastructure.config import Config
 

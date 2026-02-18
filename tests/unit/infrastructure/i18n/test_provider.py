@@ -1,8 +1,8 @@
 from pathlib import Path
 
-import pytest
 from dishka import make_async_container
 from fluentogram import TranslatorHub
+import pytest
 
 from src.infrastructure.i18n import I18nProvider
 

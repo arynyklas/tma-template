@@ -1,12 +1,12 @@
-import os
 from collections.abc import AsyncGenerator, AsyncIterator, Callable
+import os
 
-import httpx
-import pytest
 from dishka import AsyncContainer, make_async_container
 from dishka.integrations.litestar import setup_dishka
+import httpx
 from httpx import AsyncClient
 from litestar import Litestar
+import pytest
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import (
     AsyncEngine,
