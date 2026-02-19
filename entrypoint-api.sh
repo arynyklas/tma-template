@@ -6,10 +6,9 @@ API_WORKERS=${API_WORKERS:-4}
 
 echo "Starting Gunicorn with $API_WORKERS workers..."
 
-exec uv run gunicorn src.presentation.api.app:create_app \
-    --bind 0.0.0.0:8000 \
-    --worker-class uvicorn.workers.UvicornWorker \
+exec uv run granian src.presentation.api.app:create_app \
+    --factory \
+    --host 0.0.0.0 --port 8080 \
+    --interface asgi \
     --workers "$API_WORKERS" \
-    --access-logfile - \
-    --error-logfile - \
-    --preload
+    --log --log-level info

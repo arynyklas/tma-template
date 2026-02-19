@@ -49,7 +49,7 @@ status:
     docker-compose ps
 
 api:
-    uv run uvicorn src.presentation.api.app:create_app --factory --port 8080 --reload
+    uv run granian src.presentation.api.app:create_app --factory --port 8080 --interface asgi --log --access-log --reload
 
 bot:
     uv run python -m src.presentation.bot.main

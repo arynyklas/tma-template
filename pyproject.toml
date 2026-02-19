@@ -26,11 +26,11 @@ dependencies = [
     "ruff>=0.12.5",
     "sqlalchemy>=2.0.41",
     "ty>=0.0.1a16",
-    "uvicorn>=0.35.0",
     "gunicorn>=23.0.0",
     "pytest-timeout>=2.4.0",
     "pytest-sugar>=1.1.1",
     "pytest-randomly>=3.16.0",
+    "granian>=2.7.1",
 ]
 
 [project.optional-dependencies]
@@ -188,4 +188,9 @@ max-statements = 50
 [tool.coverage.run]
 omit = [
     "src/presentation/bot/main.py",
+]
+
+[dependency-groups]
+dev = [
+    "granian[reload]>=2.7.1",
 ]
