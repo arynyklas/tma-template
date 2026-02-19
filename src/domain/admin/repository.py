@@ -15,4 +15,3 @@ class AdminRepository(Protocol):
         Returns:
             List of Telegram user IDs.
         """
-        raise NotImplementedError

@@ -15,14 +15,10 @@ class InitDataDTO:
 
 class AuthService(Protocol):
     @abstractmethod
-    def validate_init_data(self, init_data: str) -> InitDataDTO:
-        raise NotImplementedError
+    def validate_init_data(self, init_data: str) -> InitDataDTO: ...
 
     @abstractmethod
-    def create_access_token(self, user_id: int) -> str:
-        raise NotImplementedError
+    def create_access_token(self, user_id: int) -> str: ...
 
     @abstractmethod
-    def validate_access_token(self, token: str) -> int:
-        """Validate JWT token and return user_id if valid."""
-        raise NotImplementedError
+    def validate_access_token(self, token: str) -> int: ...
