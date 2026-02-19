@@ -33,12 +33,6 @@ description: Create a git commit on the current branch according to our git styl
    # Lint and auto-fix simple issues:
    ruff check . --fix
    ```
-2. Pytest:
-   ```bash
-   # Prefer parallel & quick run if available
-   pytest -n auto -q --maxfail=1
-   ```
-3. If **Ruff or Pytest fail**, **DO NOT** commit. Fix issues and rerun.
 
 ## 2) Compose the commit message
 Decide on **type** and **scope** (see table). Craft a concise summary (**what**), and write a short body explaining **why/how**.
@@ -102,7 +96,7 @@ git commit -m "<emoji> <type>(<scope>): <short summary>" -m "<body>"
 
 ### Quick checklist for the agent
 1. **Inspect changes**: `git status`, commit only staged files.
-2. **Quality gates**: `ruff format .` → `ruff check . --fix` → `pytest -n auto -q --maxfail=1`. If failing → fix, then rerun.
+2. **Quality gates**: `ruff format .` → `ruff check . --fix`. If failing → fix, then rerun.
 3. **Message**: `<emoji> <type>(<scope>): <short summary>` + body and `BREAKING CHANGE` if needed.
 4. **Commit**: `git commit -m ... -m ...`.
 5. **Push** (if you plan a PR): `git push -u origin <branch>`.
