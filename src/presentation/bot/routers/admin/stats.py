@@ -10,6 +10,12 @@ from dishka.integrations.aiogram import FromDishka, inject
 from fluentogram import TranslatorHub
 
 from src.application.referral.stats import GetStatsInteractor, GetTopReferrersInteractor
+from src.presentation.bot.utils.admin_cb_data import (
+    CheckAliveCBData,
+    CheckAliveCBFilter,
+    StatsCBAction,
+    StatsCBData,
+)
 from src.presentation.bot.utils.i18n import extract_language_code
 
 router = Router(name="admin_stats")
@@ -33,11 +39,13 @@ async def stats_handler(
             [
                 InlineKeyboardButton(
                     text=i18n.get("stats-top-inviters-btn"),
-                    callback_data="ref_top",
+                    callback_data=StatsCBData(
+                        action=StatsCBAction.TOP_REFERRERS
+                    ).pack(),
                 ),
                 InlineKeyboardButton(
                     text="Check Alive",
-                    callback_data="check_alive",
+                    callback_data=StatsCBData(action=StatsCBAction.CHECK_ALIVE).pack(),
                 ),
             ]
         ]
@@ -56,7 +64,7 @@ async def stats_handler(
     )
 
 
-@router.callback_query(F.data == "ref_top")
+@router.callback_query(StatsCBData.filter(F.action == StatsCBAction.TOP_REFERRERS))
 @inject
 async def ref_top_callback(
     callback: CallbackQuery,
@@ -84,6 +92,52 @@ async def ref_top_callback(
     await callback.answer()
 
 
+check_alive_keyboard = InlineKeyboardMarkup(
+    inline_keyboard=[
+        [
+            InlineKeyboardButton(
+                text="All Users",
+                callback_data=CheckAliveCBData(filter_=CheckAliveCBFilter.ALL).pack(),
+            ),
+            InlineKeyboardButton(
+                text="30 Days",
+                callback_data=CheckAliveCBData(
+                    filter_=CheckAliveCBFilter.DAYS_30
+                ).pack(),
+            ),
+        ],
+        [
+            InlineKeyboardButton(
+                text="7 Days",
+                callback_data=CheckAliveCBData(
+                    filter_=CheckAliveCBFilter.DAYS_7
+                ).pack(),
+            ),
+            InlineKeyboardButton(
+                text="1 Day",
+                callback_data=CheckAliveCBData(
+                    filter_=CheckAliveCBFilter.DAYS_1
+                ).pack(),
+            ),
+        ],
+        [
+            InlineKeyboardButton(text="Back", callback_data="admin:back_to_stats"),
+        ],
+    ],
+)
+
+
+@router.callback_query(StatsCBData.filter(F.action == StatsCBAction.CHECK_ALIVE))
+async def cb_check_alive_from_stats(callback: CallbackQuery) -> None:
+    """Redirect to check alive menu from stats."""
+    await callback.answer()
+
+    await callback.message.edit_text(
+        "Select users to check:",
+        reply_markup=check_alive_keyboard,
+    )
+
+
 @router.callback_query(F.data == "admin:back_to_stats")
 @inject
 async def cb_back_to_stats(
@@ -102,11 +156,13 @@ async def cb_back_to_stats(
             [
                 InlineKeyboardButton(
                     text=i18n.get("stats-top-inviters-btn"),
-                    callback_data="ref_top",
+                    callback_data=StatsCBData(
+                        action=StatsCBAction.TOP_REFERRERS
+                    ).pack(),
                 ),
                 InlineKeyboardButton(
                     text="Check Alive",
-                    callback_data="check_alive",
+                    callback_data=StatsCBData(action=StatsCBAction.CHECK_ALIVE).pack(),
                 ),
             ]
         ]

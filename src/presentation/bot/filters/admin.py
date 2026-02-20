@@ -1,11 +1,11 @@
 from aiogram.filters import Filter
-from aiogram.types import Update
+from aiogram.types import CallbackQuery, Message
 
 from src.infrastructure.config import Config
 
 
 class AdminFilter(Filter):
-    async def __call__(self, obj: Update, config: Config) -> bool:
+    async def __call__(self, obj: Message | CallbackQuery, config: Config) -> bool:
         """
         Args:
             obj (Update): Aiogram injects it to the the filter.
