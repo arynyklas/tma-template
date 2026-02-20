@@ -1,4 +1,5 @@
 import asyncio
+from contextlib import suppress
 import logging
 import sys
 
@@ -73,4 +74,6 @@ async def main() -> None:
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, stream=sys.stdout)
-    asyncio.run(main())
+
+    with suppress(KeyboardInterrupt):
+        asyncio.run(main())

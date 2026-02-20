@@ -1,4 +1,4 @@
-from aiogram import Bot, F, Router
+from aiogram import Bot, Router
 from aiogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup
 from dishka.integrations.aiogram import FromDishka, inject
 
@@ -7,27 +7,12 @@ from src.application.admin import (
     CheckAliveInteractor,
     CheckAliveResult,
 )
+from src.presentation.bot.utils.admin_cb_data import (
+    CheckAliveCBData,
+    CheckAliveCBFilter,
+)
 
 router = Router(name="admin_check_alive")
-
-
-def _build_filter_keyboard() -> InlineKeyboardMarkup:
-    """Build keyboard with activity filter options."""
-    return InlineKeyboardMarkup(
-        inline_keyboard=[
-            [
-                InlineKeyboardButton(text="All Users", callback_data="check_alive:all"),
-                InlineKeyboardButton(text="30 Days", callback_data="check_alive:30"),
-            ],
-            [
-                InlineKeyboardButton(text="7 Days", callback_data="check_alive:7"),
-                InlineKeyboardButton(text="1 Day", callback_data="check_alive:1"),
-            ],
-            [
-                InlineKeyboardButton(text="Back", callback_data="admin:back_to_stats"),
-            ],
-        ],
-    )
 
 
 def _build_back_button() -> InlineKeyboardMarkup:
@@ -77,20 +62,11 @@ def _format_result(result: CheckAliveResult) -> str:
     return "\n".join(lines)
 
 
-@router.callback_query(F.data == "check_alive")
-async def cb_check_alive_menu(callback: CallbackQuery) -> None:
-    """Show check alive filter options."""
-    await callback.answer()
-    await callback.message.edit_text(
-        "Select users to check:",
-        reply_markup=_build_filter_keyboard(),
-    )
-
-
-@router.callback_query(F.data.startswith("check_alive:"))
+@router.callback_query(CheckAliveCBData.filter())
 @inject
 async def cb_check_alive_handler(
     callback: CallbackQuery,
+    callback_data: CheckAliveCBData,
     bot: Bot,
     interactor: FromDishka[CheckAliveInteractor],
 ) -> None:
@@ -98,12 +74,12 @@ async def cb_check_alive_handler(
     await callback.answer()
 
     # Parse filter from callback data
-    filter_value = callback.data.split(":")[1]
-    if filter_value == "all":
+    filter_value = callback_data.filter_
+    if filter_value == CheckAliveCBFilter.ALL:
         active_since_days = None
         filter_label = "all users"
     else:
-        active_since_days = int(filter_value)
+        active_since_days = int(filter_value.value)
         filter_label = f"users active in last {active_since_days} day(s)"
 
     await callback.message.edit_text(f"Starting alive check for {filter_label}...")

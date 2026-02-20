@@ -12,7 +12,11 @@ from src.application.user.interactors.update_language import (
 from src.domain.user import UserRepository
 from src.domain.user.vo import LanguageCode, UserId
 from src.presentation.bot.utils import edit_or_answer
-from src.presentation.bot.utils.cb_data import LanguageCBData, SettingsCBData
+from src.presentation.bot.utils.cb_data import (
+    LanguageCBData,
+    SettingsCBAction,
+    SettingsCBData,
+)
 from src.presentation.bot.utils.markups.settings import (
     get_language_keyboard,
     get_settings_keyboard,
@@ -24,7 +28,7 @@ logger = logging.getLogger(__name__)
 router = Router(name="settings")
 
 
-@router.callback_query(F.data == SettingsCBData.menu)
+@router.callback_query(SettingsCBData.filter(F.action == SettingsCBAction.MENU))
 @inject
 async def settings_menu(
     callback: CallbackQuery,
@@ -40,7 +44,7 @@ async def settings_menu(
     await callback.answer()
 
 
-@router.callback_query(F.data == SettingsCBData.language)
+@router.callback_query(SettingsCBData.filter(F.action == SettingsCBAction.LANGUAGE))
 @inject
 async def language_menu(
     callback: CallbackQuery,
@@ -94,7 +98,7 @@ async def change_language(
     await callback.answer()
 
 
-@router.callback_query(F.data == SettingsCBData.back)
+@router.callback_query(SettingsCBData.filter(F.action == SettingsCBAction.BACK))
 @inject
 async def back_to_main_menu(
     callback: CallbackQuery,

@@ -3,8 +3,10 @@ from fluentogram import TranslatorRunner
 
 from src.domain.user.vo import LanguageCode
 from src.presentation.bot.utils.cb_data import (
+    LanguageCBCode,
     LanguageCBData,
     OnboardingCBData,
+    SettingsCBAction,
     SettingsCBData,
 )
 
@@ -16,7 +18,7 @@ def get_welcome_keyboard(i18n: TranslatorRunner) -> InlineKeyboardMarkup:
             [
                 InlineKeyboardButton(
                     text=i18n.get("btn-settings"),
-                    callback_data=SettingsCBData.menu,
+                    callback_data=SettingsCBData(action=SettingsCBAction.MENU).pack(),
                 ),
             ],
         ]
@@ -30,13 +32,15 @@ def get_settings_keyboard(i18n: TranslatorRunner) -> InlineKeyboardMarkup:
             [
                 InlineKeyboardButton(
                     text=i18n.get("btn-language"),
-                    callback_data=SettingsCBData.language,
+                    callback_data=SettingsCBData(
+                        action=SettingsCBAction.LANGUAGE
+                    ).pack(),
                 ),
             ],
             [
                 InlineKeyboardButton(
                     text=i18n.get("btn-back"),
-                    callback_data=SettingsCBData.back,
+                    callback_data=SettingsCBData(action=SettingsCBAction.BACK).pack(),
                 ),
             ],
         ]
@@ -60,19 +64,19 @@ def get_language_keyboard(
             [
                 InlineKeyboardButton(
                     text=make_label("lang-en", "en"),
-                    callback_data=LanguageCBData(code="en").pack(),
+                    callback_data=LanguageCBData(code=LanguageCBCode.EN).pack(),
                 ),
             ],
             [
                 InlineKeyboardButton(
                     text=make_label("lang-ru", "ru"),
-                    callback_data=LanguageCBData(code="ru").pack(),
+                    callback_data=LanguageCBData(code=LanguageCBCode.RU).pack(),
                 ),
             ],
             [
                 InlineKeyboardButton(
                     text=i18n.get("btn-back"),
-                    callback_data=SettingsCBData.menu,
+                    callback_data=SettingsCBData(action=SettingsCBAction.MENU).pack(),
                 ),
             ],
         ]
@@ -86,13 +90,13 @@ def get_onboarding_language_keyboard() -> InlineKeyboardMarkup:
             [
                 InlineKeyboardButton(
                     text="🇬🇧 English",
-                    callback_data=OnboardingCBData(code="en").pack(),
+                    callback_data=OnboardingCBData(code=LanguageCBCode.EN).pack(),
                 ),
             ],
             [
                 InlineKeyboardButton(
                     text="🇷🇺 Русский",
-                    callback_data=OnboardingCBData(code="ru").pack(),
+                    callback_data=OnboardingCBData(code=LanguageCBCode.RU).pack(),
                 ),
             ],
         ]
