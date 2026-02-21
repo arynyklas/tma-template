@@ -31,14 +31,27 @@ jobs:
         with:
           fetch-depth: 1
 
+      - name: Debug secrets availability
+        run: |
+          echo "Checking if CLAUDE_API_KEY is set (will be masked if yes):"
+          if [ -n "${{ secrets.CLAUDE_API_KEY }}" ]; then
+            echo "CLAUDE_API_KEY is set (value hidden for security)"
+          else
+            echo "CLAUDE_API_KEY is NOT set"
+          fi
+          echo "Checking if CLAUDE_MODEL_NAME is set:"
+          if [ -n "${{ secrets.CLAUDE_MODEL_NAME }}" ]; then
+            echo "CLAUDE_MODEL_NAME is set"
+          else
+            echo "CLAUDE_MODEL_NAME is NOT set"
+          fi
+
       - name: Run Claude Code Review
         id: claude-review
         uses: anthropics/claude-code-action@v1
-
         env:
           ANTHROPIC_BASE_URL: ${{ secrets.CLAUDE_BASE_URL }}
           ANTHROPIC_API_KEY: ${{ secrets.CLAUDE_API_KEY }}
-
         with:
           track_progress: true
 
