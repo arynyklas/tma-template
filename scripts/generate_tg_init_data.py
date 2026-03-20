@@ -23,7 +23,6 @@ import hashlib
 import hmac
 import json
 from pathlib import Path
-import re
 import sys
 from urllib.parse import parse_qsl, unquote, urlencode
 
@@ -185,8 +184,6 @@ def validate_init_data(init_data: str, token: str) -> dict[str, str | None]:
             "start_param": parsed.start_param,
             "auth_date": str(parsed.auth_date) if parsed.auth_date else None,
         }
-    except ImportError:
-        return {"info": "aiogram not available, manual verification only"}
     except Exception as ex:
         return {"error": str(ex)}
 
@@ -198,25 +195,21 @@ def set_config_init_data(init_data: str) -> bool:
         print(f"Error: Config file not found: {config_path}", file=sys.stderr)
         return False
 
-    content = config_path.read_text()
+    try:
+        config = yaml.safe_load(config_path.read_text()) or {}
+        if "telegram" not in config:
+            config["telegram"] = {}
+        config["telegram"]["tg_init_data"] = init_data
 
-    # Update or add tg_init_data field under telegram config
-    if "tg_init_data:" in content:
-        # Update existing
-        content = re.sub(
-            r"tg_init_data:\s*[^\n]*", f'tg_init_data: "{init_data}"', content
-        )
-    else:
-        # Add after bot_username
-        content = re.sub(
-            r"(bot_username:\s*[^\n]+)",
-            r'\1\n  tg_init_data: "' + init_data + '"',
-            content,
-        )
+        with open(config_path, "w") as f:
+            yaml.safe_dump(config, f, default_flow_style=False, sort_keys=False)
 
-    config_path.write_text(content)
-    print(f"Updated {config_path} with new tg_init_data")
-    return True
+        print(f"Updated {config_path} with new tg_init_data")
+        return True
+
+    except Exception as ex:
+        print(f"Error updating config file: {ex}", file=sys.stderr)
+        return False
 
 
 def main() -> int:
