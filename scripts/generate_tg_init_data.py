@@ -187,8 +187,8 @@ def validate_init_data(init_data: str, token: str) -> dict[str, str | None]:
         }
     except ImportError:
         return {"info": "aiogram not available, manual verification only"}
-    except Exception as e:
-        return {"error": str(e)}
+    except Exception as ex:
+        return {"error": str(ex)}
 
 
 def set_config_init_data(init_data: str) -> bool:
