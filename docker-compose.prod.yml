@@ -47,7 +47,7 @@ services:
       dockerfile: docker/Dockerfile
     entrypoint: ["/app/entrypoint-api.sh"]
     ports:
-      - "8000:8000"
+      - "8080:8080"
     environment:
       API_WORKERS: ${API_WORKERS}
     volumes:
