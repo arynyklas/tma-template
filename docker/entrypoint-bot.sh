@@ -3,4 +3,4 @@ set -e
 
 echo "Starting Telegram Bot..."
 
-exec uv run python -m src.presentation.bot.main
+exec python -m src.presentation.bot.main
