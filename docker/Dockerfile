@@ -1,6 +1,7 @@
 FROM python:3.13-slim AS base
 
-RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates \
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
 ENV UV_PROJECT_ENVIRONMENT=/app/.venv \
@@ -45,10 +46,7 @@ ENV GIT_COMMIT=${GIT_COMMIT} \
 
 WORKDIR /app
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    ghostscript \
-    poppler-utils \
-    && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && rm -rf /var/lib/apt/lists/*
 
 COPY --from=builder /app/.venv /app/.venv
 COPY src/ ./src/
