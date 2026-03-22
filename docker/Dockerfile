@@ -57,4 +57,4 @@ COPY --chmod=755 docker/entrypoint-*.sh ./
 COPY alembic.ini ./
 
 ENV PATH="/app/.venv/bin:$PATH"
-ENV PYTHONPATH="/app/src"
+ENV PYTHONPATH="/app"
