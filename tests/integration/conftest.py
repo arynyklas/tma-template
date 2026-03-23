@@ -141,7 +141,7 @@ async def dishka_container_for_tests(
 
     container = make_async_container(
         AuthProvider(),
-        DBProvider(worker_postgres_config),
+        DBProvider(),
         *interactor_provider_instances,
         context={Config: worker_config, AuthService: test_auth_service},
     )

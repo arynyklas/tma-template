@@ -13,7 +13,7 @@ concurrency:
 
 env:
   PYTHON_VERSION: "3.13"
-  MYPY_PATHS: "src/"
+  TYPE_CHECK_PATHS: "src/"
   LINT_PATHS: "src/ tests/"
 
 # ── Validate ──────────────────────────────────────────────────────────────
@@ -187,7 +187,7 @@ jobs:
 # ── Type Check ────────────────────────────────────────────────────────────
 
   type-check:
-    name: Type Check (MyPy)
+    name: Type Check (ty)
     runs-on: ubuntu-latest
     continue-on-error: true
     steps:
@@ -205,8 +205,8 @@ jobs:
       - name: Install dependencies
         run: uv sync --frozen --group dev
 
-      - name: Run MyPy
-        run: uv run mypy $MYPY_PATHS --ignore-missing-imports --no-strict-optional
+      - name: Run ty
+        run: uv run ty check $TYPE_CHECK_PATHS
 
 # ── Build ─────────────────────────────────────────────────────────────────
   # NOTE: disabled in template since not all projects will build a Docker image, and we want to keep CI fast by default. Can be enabled as needed.

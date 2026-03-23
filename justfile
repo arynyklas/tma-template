@@ -47,8 +47,8 @@ lint:
     uv run ruff format src tests
     uv run ruff check src tests --fix
 
-type-check:
-    uv run mypy src/ --ignore-missing-imports --no-strict-optional
+ty:
+    uv run ty check src/
 
 generate-i18n:
     uv run python scripts/generate_i18n_stubs.py
