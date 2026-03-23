@@ -41,7 +41,7 @@ def prepare_app(config: Config) -> Litestar:
             version="0.1.0",
             render_plugins=[ScalarRenderPlugin()],
         ),
-        exception_handlers={
+        exception_handlers={  # type: ignore[invalid-argument-type]
             Exception: custom_exception_handler,
             NotAuthorizedException: litestar_error_handler,
             ClientException: litestar_error_handler,
@@ -69,7 +69,10 @@ def create_app() -> Litestar:
         AuthProvider(),
         DBProvider(),
         *interactor_provider_instances,
-        context={Config: config, AuthService: auth_service},
+        context={
+            Config: config,
+            AuthService: auth_service,
+        },
     )
 
     setup_dishka(container=container, app=app)

@@ -47,7 +47,7 @@ class VOType(TypeDecorator):
         if value is None:
             return None
         if isinstance(value, self._vo_class):
-            return value.value  # type: ignore[attr-defined]
+            return value.value
         return value
 
     def process_result_value(
@@ -57,4 +57,4 @@ class VOType(TypeDecorator):
     ) -> VOTypeClass | None:
         if value is None:
             return None
-        return self._vo_class(value)  # type: ignore[call-arg]
+        return self._vo_class(value)
