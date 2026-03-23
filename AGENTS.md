@@ -66,7 +66,7 @@ just bot            # run Telegram bot
 just test           # start test DB, run pytest, tear down
 just test-db-up     # start test DB without running tests
 just lint           # ruff format + ruff check --fix
-just type-check     # mypy src/
+just ty             # ty check src/
 just generate-i18n  # regenerate i18n stubs
 ```
 
