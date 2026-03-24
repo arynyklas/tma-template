@@ -55,11 +55,7 @@ Hooks run `ruff check --fix`, `ruff format`, and a security-only ruff pass on ev
 docker compose -f docker-compose-test.yml up -d
 uv run pytest -n auto -ss -vv --maxfail=1
 docker compose -f docker-compose-test.yml down -v
-```
-
-Or with `just`:
-
-```shell
+# or
 just test
 ```
 
@@ -123,7 +119,7 @@ This starts:
 - Postgres (no exposed port)
 - Alembic migration runner (one-shot, runs before app starts)
 - Telegram bot
-- API server (host port **8000**)
+- API server (host port **8080**)
 
 ### 6.3. View logs
 
