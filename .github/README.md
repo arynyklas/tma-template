@@ -143,3 +143,11 @@ uv run ruff check src tests --fix
 # or
 just lint
 ```
+
+## Type checking
+
+```shell
+uv run ty check src/
+# or
+just ty
+```
