@@ -7,8 +7,9 @@ from .user import user_router
 
 def setup_routes() -> Router:
     route_handlers = [
-        auth_router,
         health_router,
+        # metrics_router,
+        auth_router,
         user_router,
     ]
     router = Router(path="", route_handlers=route_handlers)

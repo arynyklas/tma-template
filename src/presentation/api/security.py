@@ -12,6 +12,10 @@ PUBLIC_ROUTE: dict[str, Any] = {
     "exclude_from_auth": True,
     "security": [{}],
 }
+ACCESS_SECURED_ROUTE: dict[str, Any] = {
+    "exclude_from_auth": True,
+    "security": [{"BearerToken": []}],
+}
 OPTIONAL_AUTH_ROUTE: dict[str, Any] = {
     "exclude_from_auth": True,
     "security": [{}, {"BearerToken": []}],
@@ -39,6 +43,18 @@ def decode_token_to_user_id(encoded_token: str, config: Config) -> UserId:
     return user_id_from_token(token)
 
 
+def _extract_bearer_token(auth_header: str | None) -> str:
+    if auth_header is None:
+        raise NotAuthorizedException("Missing Authorization header")
+    if not auth_header.lower().startswith("bearer "):
+        raise NotAuthorizedException("Invalid Authorization header")
+
+    encoded_token = auth_header[7:]
+    if not encoded_token:
+        raise NotAuthorizedException("Invalid token")
+    return encoded_token
+
+
 def _extract_optional_bearer_token(auth_header: str | None) -> str | None:
     if auth_header is None:
         return None
@@ -62,16 +78,21 @@ def get_optional_user_from_request(
     return decode_token_to_user_id(encoded_token=encoded_token, config=config)
 
 
+def require_secret(
+    request: Request[Any, Any, Any] | ASGIConnection, valid_secret: str
+) -> None:
+    header_secret = _extract_bearer_token(request.headers.get("Authorization"))
+    if header_secret != valid_secret:
+        raise NotAuthorizedException("Invalid secret")
+
+
 def create_jwt_auth(config: Config) -> JWTAuth[UserId, Token]:
     def retrieve_user_handler(
         token: Token, _: ASGIConnection[Any, Any, Any, Any]
     ) -> UserId:
         return user_id_from_token(token)
 
-    return JWTAuth[
-        UserId,
-        Token,
-    ](
+    return JWTAuth[UserId, Token](
         token_secret=config.auth.secret_key,
         algorithm=config.auth.algorithm,
         retrieve_user_handler=retrieve_user_handler,

@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, HttpUrl
 import yaml
 
 
@@ -30,6 +30,11 @@ class AuthConfig(BaseModel):
     access_token_expire_minutes: int
 
 
+class MetricsConfig(BaseModel):
+    api_base: HttpUrl = Field(description="Base URL for metrics export (v1)")
+    secret: str = Field(min_length=1)
+
+
 class TelegramConfig(BaseModel):
     bot_token: str
     admin_ids: list[int]
@@ -42,6 +47,7 @@ class TelegramConfig(BaseModel):
 class Config(BaseModel):
     postgres: PostgresConfig
     auth: AuthConfig
+    metrics: MetricsConfig
     telegram: TelegramConfig
 
 

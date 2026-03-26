@@ -9,12 +9,14 @@ import pytest
 from src.domain.user.vo import UserId
 from src.infrastructure.config import Config
 from src.presentation.api.security import (
+    ACCESS_SECURED_ROUTE,
     OPTIONAL_AUTH_ROUTE,
     PUBLIC_ROUTE,
     SCHEMA_AUTH_EXCLUDE_PATTERNS,
     create_jwt_auth,
     decode_token_to_user_id,
     get_optional_user_from_request,
+    require_secret,
 )
 
 
@@ -25,6 +27,9 @@ def mock_config() -> Mock:
     auth_config.secret_key = "3d1b2a2127de6f65804364813b3107b2"
     auth_config.algorithm = "HS256"
     config.auth = auth_config
+    metrics_config = Mock()
+    metrics_config.secret = "metrics-secret"
+    config.metrics = metrics_config
     return config
 
 
@@ -52,6 +57,12 @@ class TestRouteSecurityOptions:
         assert PUBLIC_ROUTE == {
             "exclude_from_auth": True,
             "security": [{}],
+        }
+
+    def test_access_secured_route_marks_operation_bearer_required(self) -> None:
+        assert ACCESS_SECURED_ROUTE == {
+            "exclude_from_auth": True,
+            "security": [{"BearerToken": []}],
         }
 
     def test_optional_auth_route_marks_operation_optional(self) -> None:
@@ -122,3 +133,16 @@ class TestOptionalRequestAuth:
 
         with pytest.raises(NotAuthorizedException, match="Invalid token"):
             get_optional_user_from_request(request, mock_config)
+
+
+class TestMetricsSecretAuth:
+    def test_valid_metrics_secret_allows_access(self, mock_config: Mock) -> None:
+        request = _create_request(auth_header="Bearer metrics-secret")
+
+        assert require_secret(request, mock_config.metrics.secret) is None
+
+    def test_invalid_metrics_secret_returns_401(self, mock_config: Mock) -> None:
+        request = _create_request(auth_header="Bearer wrong-secret")
+
+        with pytest.raises(NotAuthorizedException, match="Invalid secret"):
+            require_secret(request, mock_config.metrics.secret)

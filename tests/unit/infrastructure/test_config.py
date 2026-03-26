@@ -9,6 +9,7 @@ import yaml
 from src.infrastructure.config import (
     AuthConfig,
     Config,
+    MetricsConfig,
     PostgresConfig,
     TelegramConfig,
     load_config,
@@ -212,6 +213,16 @@ class TestAuthConfig:
             assert config.access_token_expire_minutes == expected
 
 
+class TestMetricsConfig:
+    def test_valid_config(self):
+        config = MetricsConfig.model_validate(
+            {"api_base": "https://metrics.example.com/v1", "secret": "metrics-secret"}
+        )
+
+        assert str(config.api_base) == "https://metrics.example.com/v1"
+        assert config.secret == "metrics-secret"
+
+
 class TestTelegramConfig:
     def test_valid_config(self):
         config = TelegramConfig(
@@ -272,6 +283,9 @@ class TestConfig:
             algorithm="HS256",
             access_token_expire_minutes=30,
         )
+        metrics_config = MetricsConfig.model_validate(
+            {"api_base": "https://metrics.example.com/v1", "secret": "metrics-secret"}
+        )
         telegram_config = TelegramConfig(
             bot_token="123456789:ABCdefGHIjklMNOpqrsTUVwxyz",
             admin_ids=[123456789],
@@ -279,10 +293,14 @@ class TestConfig:
         )
 
         config = Config(
-            postgres=postgres_config, auth=auth_config, telegram=telegram_config
+            postgres=postgres_config,
+            auth=auth_config,
+            metrics=metrics_config,
+            telegram=telegram_config,
         )
         assert config.postgres == postgres_config
         assert config.auth == auth_config
+        assert config.metrics == metrics_config
         assert config.telegram == telegram_config
 
     @pytest.mark.parametrize(
@@ -314,6 +332,10 @@ class TestLoadConfig:
                 "algorithm": "HS256",
                 "access_token_expire_minutes": 30,
             },
+            "metrics": {
+                "api_base": "https://metrics.example.com/v1",
+                "secret": "metrics-secret",
+            },
             "telegram": {
                 "bot_token": "123456789:ABCdefGHIjklMNOpqrsTUVwxyz",
                 "admin_ids": [123456789],
@@ -338,6 +360,8 @@ class TestLoadConfig:
             assert config.auth.secret_key == "3d1b2a2127de6f65804364813b3107b2"
             assert config.auth.algorithm == "HS256"
             assert config.auth.access_token_expire_minutes == 30
+            assert str(config.metrics.api_base) == "https://metrics.example.com/v1"
+            assert config.metrics.secret == "metrics-secret"
             assert config.telegram.bot_token == "123456789:ABCdefGHIjklMNOpqrsTUVwxyz"
         finally:
             Path(temp_file).unlink()
@@ -355,6 +379,10 @@ class TestLoadConfig:
                 "secret_key": "3d1b2a2127de6f65804364813b3107b2",
                 "algorithm": "HS256",
                 "access_token_expire_minutes": 30,
+            },
+            "metrics": {
+                "api_base": "https://metrics.example.com/v1",
+                "secret": "metrics-secret",
             },
             "telegram": {
                 "bot_token": "123456789:ABCdefGHIjklMNOpqrsTUVwxyz",
@@ -377,6 +405,10 @@ class TestLoadConfig:
                         config.telegram.bot_token
                         == "123456789:ABCdefGHIjklMNOpqrsTUVwxyz"
                     )
+                    assert (
+                        str(config.metrics.api_base) == "https://metrics.example.com/v1"
+                    )
+                    assert config.metrics.secret == "metrics-secret"
 
     def test_load_config_missing_file(self):
         with pytest.raises(FileNotFoundError):
@@ -462,6 +494,10 @@ class TestLoadConfig:
                 "algorithm": "HS256",
                 "access_token_expire_minutes": 30,
             },
+            "metrics": {
+                "api_base": "https://metrics.example.com/v1",
+                "secret": "metrics-secret",
+            },
             "telegram": {
                 "bot_token": "123456789:ABCdefGHIjklMNOpqrsTUVwxyz",
                 "admin_ids": [123456789],
@@ -497,6 +533,10 @@ class TestLoadConfig:
                 "algorithm": "HS256",
                 "access_token_expire_minutes": 30,
             },
+            "metrics": {
+                "api_base": "https://metrics.example.com/v1",
+                "secret": "metrics-secret",
+            },
             "telegram": {
                 "bot_token": "123456789:ABCdefGHIjklMNOpqrsTUVwxyz",
                 "admin_ids": [123456789],
@@ -527,10 +567,14 @@ class TestLoadConfig:
                 "algorithm": "HS256",
                 "access_token_expire_minutes": 30,
             },
+            "metrics": {
+                "api_base": "https://metrics.example.com/v1",
+                "secret": "metrics-secret",
+            },
             "telegram": {
-                "bot_username": "test_bot",
                 "bot_token": "123456789:ABCdefGHIjklMNOpqrsTUVwxyz",
                 "admin_ids": [123456789],
+                "bot_username": "test_bot",
             },
         }
 

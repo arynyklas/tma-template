@@ -1,9 +1,19 @@
 from dishka import make_async_container
 from dishka.integrations.litestar import setup_dishka
 from litestar import Litestar
+from litestar.contrib.opentelemetry import OpenTelemetryConfig, OpenTelemetryPlugin
 from litestar.exceptions import ClientException, NotAuthorizedException
 from litestar.openapi.config import OpenAPIConfig
 from litestar.openapi.plugins import ScalarRenderPlugin
+from litestar.plugins.prometheus import PrometheusConfig
+from opentelemetry import metrics, trace
+from opentelemetry.exporter.otlp.proto.http.metric_exporter import OTLPMetricExporter
+from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
+from opentelemetry.sdk.metrics import MeterProvider
+from opentelemetry.sdk.metrics.export import PeriodicExportingMetricReader
+from opentelemetry.sdk.resources import SERVICE_NAME, Resource
+from opentelemetry.sdk.trace import TracerProvider
+from opentelemetry.sdk.trace.export import BatchSpanProcessor
 from pydantic import ValidationError as PydanticValidationError
 
 from src.application.auth.exceptions import InvalidInitDataError
@@ -32,14 +42,51 @@ def prepare_app(config: Config) -> Litestar:
     routes = setup_routes()
     jwt_auth = create_jwt_auth(config)
 
+    resource = Resource.create(
+        {
+            SERVICE_NAME: "tma-template-api",
+        }
+    )
+
+    metrics_api_base = str(config.metrics.api_base).removesuffix("/")
+
+    tracer_provider = TracerProvider(resource=resource)
+    tracer_provider.add_span_processor(
+        BatchSpanProcessor(OTLPSpanExporter(endpoint=f"{metrics_api_base}/v1/traces"))
+    )
+    trace.set_tracer_provider(tracer_provider)
+
+    metric_reader = PeriodicExportingMetricReader(
+        OTLPMetricExporter(endpoint=f"{metrics_api_base}/v1/metrics")
+    )
+    meter_provider = MeterProvider(
+        resource=resource,
+        metric_readers=[metric_reader],
+    )
+    metrics.set_meter_provider(meter_provider)
+
+    otel_config = OpenTelemetryConfig(
+        tracer_provider=tracer_provider,
+        meter_provider=meter_provider,
+    )
+
+    prometheus_config = PrometheusConfig(group_path=False)
+
     return Litestar(
         route_handlers=[routes],
+        plugins=[
+            OpenTelemetryPlugin(otel_config),
+        ],
+        middleware=[
+            prometheus_config.middleware,
+        ],
         on_app_init=[jwt_auth.on_app_init],
         openapi_config=OpenAPIConfig(
             title="TMA API",
             description="API for TMA",
             version="0.1.0",
             render_plugins=[ScalarRenderPlugin()],
+            path="/schema",
         ),
         exception_handlers={  # type: ignore[invalid-argument-type]
             Exception: custom_exception_handler,
