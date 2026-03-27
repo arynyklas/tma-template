@@ -1,3 +1,4 @@
+# Use with: docker compose --env-file .env.prod -f docker-compose.prod.yml <command>
 name: ${APP_NAME}_prod
 
 services:
@@ -8,6 +9,8 @@ services:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -15,6 +18,81 @@ services:
       interval: 10s
       timeout: 10s
       retries: 5
+
+  alloy:
+    image: grafana/alloy:v1.14.2
+    container_name: ${APP_NAME}_prod_alloy
+    command:
+      - run
+      - /etc/alloy/config.alloy
+      - --storage.path=/var/lib/alloy/data
+      - --server.http.listen-addr=0.0.0.0:12345
+    ports:
+      - "${ALLOY_PORT:-12345}:12345"
+      - "${OTLP_GRPC_PORT:-4317}:4317"
+      - "${OTLP_HTTP_PORT:-4318}:4318"
+    volumes:
+      - alloy_data:/var/lib/alloy/data
+      - ./docker/alloy:/etc/alloy:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+    depends_on:
+      - postgres
+      - tempo
+      - loki
+
+  loki:
+    image: grafana/loki:3.7
+    container_name: ${APP_NAME}_prod_loki
+    user: "0"
+    command:
+      - -config.file=/etc/loki/loki.yaml
+    ports:
+      - "${LOKI_PORT:-3100}:3100"
+    volumes:
+      - loki_data:/tmp/loki
+      - ./docker/loki/loki.yaml:/etc/loki/loki.yaml:ro
+
+  prometheus:
+    image: prom/prometheus:v3.10.0
+    container_name: ${APP_NAME}_prod_prometheus
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --web.enable-lifecycle
+      - --web.enable-remote-write-receiver
+    ports:
+      - "${PROMETHEUS_PORT:-9090}:9090"
+    volumes:
+      - prometheus_data:/prometheus
+      - ./docker/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+
+  tempo:
+    image: grafana/tempo:2.10.3
+    container_name: ${APP_NAME}_prod_tempo
+    command:
+      - -config.file=/etc/tempo.yaml
+    ports:
+      - "${TEMPO_PORT:-3200}:3200"
+    volumes:
+      - tempo_data:/var/tempo
+      - ./docker/tempo/tempo.yaml:/etc/tempo.yaml:ro
+
+  grafana:
+    image: grafana/grafana-oss:12.4.2
+    container_name: ${APP_NAME}_prod_grafana
+    ports:
+      - "${GRAFANA_PORT:-3000}:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./docker/grafana/provisioning:/etc/grafana/provisioning:ro
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-admin}
+    depends_on:
+      - alloy
+      - prometheus
+      - tempo
+      - loki
 
   alembic:
     container_name: ${APP_NAME}_prod_alembic
@@ -27,6 +105,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      alloy:
+        condition: service_started
 
   bot:
     container_name: ${APP_NAME}_prod_bot
@@ -39,6 +119,8 @@ services:
     depends_on:
       alembic:
         condition: service_completed_successfully
+      alloy:
+        condition: service_started
 
   api:
     container_name: ${APP_NAME}_prod_api
@@ -55,6 +137,8 @@ services:
     depends_on:
       alembic:
         condition: service_completed_successfully
+      alloy:
+        condition: service_started
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:8080/health || exit 1"]
       interval: 30s
@@ -64,3 +148,8 @@ services:
 
 volumes:
   postgres_data:
+  alloy_data:
+  loki_data:
+  prometheus_data:
+  tempo_data:
+  grafana_data:

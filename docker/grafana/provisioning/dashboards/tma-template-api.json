@@ -590,7 +590,7 @@
             "uid": "loki"
           },
           "editorMode": "code",
-          "expr": "{job=\"$job\"}",
+          "expr": "{service_name=\"template_app_prod_api\"}",
           "refId": "A"
         }
       ],

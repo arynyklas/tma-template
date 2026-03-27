@@ -1,9 +1,8 @@
-import logging
-
 from dishka.integrations.litestar import FromDishka, inject
 from litestar import Router, post
 
 from src.application.auth.tg import AuthTgInputDTO, AuthTgInteractor, AuthTgOutputDTO
+from src.infrastructure.logging import get_logger
 from src.presentation.api.security import PUBLIC_ROUTE
 
 from .schemas import (
@@ -12,7 +11,7 @@ from .schemas import (
     AuthTgResponseSchema,
 )
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 @post("/", dto=AuthTgRequestSchema, return_dto=AuthTgResponseSchema, **PUBLIC_ROUTE)
@@ -21,6 +20,11 @@ async def auth_user_handler(
     data: AuthTgRequest,
     interactor: FromDishka[AuthTgInteractor],
 ) -> AuthTgOutputDTO:
+    logger.info(
+        event="telegram_auth_requested",
+        message="Telegram authentication requested",
+    )
+
     response = await interactor(AuthTgInputDTO(data.init_data))
 
     return response

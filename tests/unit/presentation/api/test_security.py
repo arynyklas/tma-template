@@ -27,9 +27,9 @@ def mock_config() -> Mock:
     auth_config.secret_key = "3d1b2a2127de6f65804364813b3107b2"
     auth_config.algorithm = "HS256"
     config.auth = auth_config
-    metrics_config = Mock()
-    metrics_config.secret = "metrics-secret"
-    config.metrics = metrics_config
+    telemetry_config = Mock()
+    telemetry_config.secret = "metrics-secret"
+    config.telemetry = telemetry_config
     return config
 
 
@@ -139,10 +139,10 @@ class TestMetricsSecretAuth:
     def test_valid_metrics_secret_allows_access(self, mock_config: Mock) -> None:
         request = _create_request(auth_header="Bearer metrics-secret")
 
-        assert require_secret(request, mock_config.metrics.secret) is None
+        assert require_secret(request, mock_config.telemetry.secret) is None
 
     def test_invalid_metrics_secret_returns_401(self, mock_config: Mock) -> None:
         request = _create_request(auth_header="Bearer wrong-secret")
 
         with pytest.raises(NotAuthorizedException, match="Invalid secret"):
-            require_secret(request, mock_config.metrics.secret)
+            require_secret(request, mock_config.telemetry.secret)

@@ -3,6 +3,8 @@ set -e
 
 API_WORKERS=${API_WORKERS:-4}
 
+export LOG_JSON=true
+
 echo "Starting Granian with $API_WORKERS workers..."
 
 if granian src.presentation.api.app:create_app \

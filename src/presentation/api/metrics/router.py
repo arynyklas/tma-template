@@ -16,6 +16,7 @@ from prometheus_client.openmetrics.exposition import (
     generate_latest as openmetrics_generate_latest,
 )
 
+from src.infrastructure.logging import get_logger
 from src.presentation.api.security import ACCESS_SECURED_ROUTE
 
 from .guards import metrics_auth_guard
@@ -23,6 +24,8 @@ from .guards import metrics_auth_guard
 __all__ = ("metrics_router",)
 
 OPENMETRICS_FORMAT = False
+
+logger = get_logger(__name__)
 
 
 @get(
@@ -32,6 +35,11 @@ OPENMETRICS_FORMAT = False
     description="Expose Prometheus metrics for authenticated scraping.",
 )
 async def get_metrics_handler() -> Response:
+    logger.info(
+        event="metrics_scrape_requested",
+        message="Prometheus metrics scrape requested",
+    )
+
     # adapted from litestar.plugins.prometheus.controller.PrometheusController
     registry = REGISTRY
     if (

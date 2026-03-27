@@ -26,7 +26,7 @@ status:
 
 # Presentations
 api:
-    uv run granian src.presentation.api.app:create_app --factory --port 8080 --interface asgi --log --access-log --reload
+    uv run granian src.presentation.api.app:create_app --factory --port 8080 --interface asgi --reload
 
 bot:
     uv run python -m src.presentation.bot.main

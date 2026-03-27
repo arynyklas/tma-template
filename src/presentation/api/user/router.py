@@ -1,4 +1,3 @@
-import logging
 from typing import Any
 
 from dishka.integrations.litestar import FromDishka, inject
@@ -11,10 +10,11 @@ from src.application.user.get_me import (
     GetUserProfileOutputDTO,
 )
 from src.domain.user.vo import UserId
+from src.infrastructure.logging import get_logger
 
 from .schemas import UserProfileResponseSchema
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 @get("/profile", return_dto=UserProfileResponseSchema)
@@ -24,6 +24,12 @@ async def get_user_profile(
     interactor: FromDishka[GetUserProfileInteractor],
 ) -> GetUserProfileOutputDTO:
     """Get the authenticated user's profile."""
+    logger.info(
+        event="user_profile_requested",
+        message="Authenticated user profile requested",
+        user_id=request.user,
+    )
+
     response = await interactor(data=GetUserProfileInputDTO(user_id=request.user))
 
     return response

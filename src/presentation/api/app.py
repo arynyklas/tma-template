@@ -24,7 +24,9 @@ from src.infrastructure.config import Config, load_config
 from src.infrastructure.di import interactor_providers
 from src.infrastructure.di.auth import AuthProvider
 from src.infrastructure.di.db import DBProvider
+from src.infrastructure.logging import configure_logging
 
+from .access_log import AccessLogMiddleware
 from .exception import (
     application_error_handler,
     custom_exception_handler,
@@ -38,30 +40,32 @@ from .security import create_jwt_auth
 from .utils import setup_routes
 
 
-def prepare_app(config: Config) -> Litestar:
-    routes = setup_routes()
-    jwt_auth = create_jwt_auth(config)
-
+def _get_otel_config(config: Config) -> OpenTelemetryConfig:
     resource = Resource.create(
         {
             SERVICE_NAME: "tma-template-api",
         }
     )
 
-    metrics_api_base = str(config.metrics.api_base).removesuffix("/")
+    alloy_base = str(config.telemetry.alloy_base).removesuffix("/")
 
     tracer_provider = TracerProvider(resource=resource)
-    tracer_provider.add_span_processor(
-        BatchSpanProcessor(OTLPSpanExporter(endpoint=f"{metrics_api_base}/v1/traces"))
-    )
+    if config.telemetry.export_traces:
+        tracer_provider.add_span_processor(
+            BatchSpanProcessor(OTLPSpanExporter(endpoint=f"{alloy_base}/v1/traces"))
+        )
     trace.set_tracer_provider(tracer_provider)
 
-    metric_reader = PeriodicExportingMetricReader(
-        OTLPMetricExporter(endpoint=f"{metrics_api_base}/v1/metrics")
-    )
+    metric_readers = []
+    if config.telemetry.export_metrics:
+        metric_readers.append(
+            PeriodicExportingMetricReader(
+                OTLPMetricExporter(endpoint=f"{alloy_base}/v1/metrics")
+            )
+        )
     meter_provider = MeterProvider(
         resource=resource,
-        metric_readers=[metric_reader],
+        metric_readers=metric_readers,
     )
     metrics.set_meter_provider(meter_provider)
 
@@ -70,6 +74,15 @@ def prepare_app(config: Config) -> Litestar:
         meter_provider=meter_provider,
     )
 
+    return otel_config
+
+
+def prepare_app(config: Config) -> Litestar:
+    routes = setup_routes()
+    jwt_auth = create_jwt_auth(config)
+
+    otel_config = _get_otel_config(config)
+
     prometheus_config = PrometheusConfig(group_path=False)
 
     return Litestar(
@@ -77,7 +90,9 @@ def prepare_app(config: Config) -> Litestar:
         plugins=[
             OpenTelemetryPlugin(otel_config),
         ],
+        logging_config=None,  # We manage logging ourselves via structlog
         middleware=[
+            AccessLogMiddleware(),
             prometheus_config.middleware,
         ],
         on_app_init=[jwt_auth.on_app_init],
@@ -103,6 +118,8 @@ def prepare_app(config: Config) -> Litestar:
 
 
 def create_app() -> Litestar:
+    configure_logging("tma-template-api")
+
     config = load_config()
 
     auth_service: AuthService = AuthServiceImpl(config)

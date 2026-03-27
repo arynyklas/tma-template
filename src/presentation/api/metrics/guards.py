@@ -12,4 +12,4 @@ async def metrics_auth_guard(
     _: BaseRouteHandler,
     config: FromDishka[Config],
 ) -> None:
-    require_secret(connection, config.metrics.secret)
+    require_secret(connection, config.telemetry.secret)

@@ -3,7 +3,7 @@ name: ${APP_NAME}_local
 services:
   postgres:
     image: postgres:17-alpine
-    container_name: postgres
+    container_name: ${APP_NAME}_local_postgres
     environment:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
@@ -18,85 +18,5 @@ services:
       timeout: 10s
       retries: 3
 
-  alloy:
-    image: grafana/alloy:v1.14.2
-    container_name: alloy
-    command:
-      - run
-      - /etc/alloy/config.alloy
-      - --storage.path=/var/lib/alloy/data
-      - --server.http.listen-addr=0.0.0.0:12345
-    ports:
-      - "${ALLOY_PORT:-12345}:12345"
-      - "4317:4317"
-      - "4318:4318"
-    volumes:
-      - alloy_data:/var/lib/alloy/data
-      - ./docker/alloy:/etc/alloy:ro
-      - /var/run/docker.sock:/var/run/docker.sock
-    depends_on:
-      - postgres
-      - tempo
-      - loki
-
-  loki:
-    image: grafana/loki:3.3.0
-    container_name: loki
-    user: "0"
-    command:
-      - -config.file=/etc/loki/loki.yaml
-    ports:
-      - "${LOKI_PORT:-3100}:3100"
-    volumes:
-      - loki_data:/tmp/loki
-      - ./docker/loki/loki.yaml:/etc/loki/loki.yaml:ro
-
-  prometheus:
-    image: prom/prometheus:v3.10.0
-    container_name: prometheus
-    command:
-      - --config.file=/etc/prometheus/prometheus.yml
-      - --storage.tsdb.path=/prometheus
-      - --web.enable-lifecycle
-      - --web.enable-remote-write-receiver
-    ports:
-      - "${PROMETHEUS_PORT:-9090}:9090"
-    volumes:
-      - prometheus_data:/prometheus
-      - ./docker/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
-
-  tempo:
-    image: grafana/tempo:2.10.1
-    container_name: tempo
-    command:
-      - -config.file=/etc/tempo.yaml
-    ports:
-      - "${TEMPO_PORT:-3200}:3200"
-    volumes:
-      - tempo_data:/var/tempo
-      - ./docker/tempo/tempo.yaml:/etc/tempo.yaml:ro
-
-  grafana:
-    image: grafana/grafana-oss:12.4.2
-    container_name: grafana
-    ports:
-      - "${GRAFANA_PORT:-3000}:3000"
-    volumes:
-      - grafana_data:/var/lib/grafana
-      - ./docker/grafana/provisioning:/etc/grafana/provisioning:ro
-    environment:
-      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
-      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-admin}
-    depends_on:
-      - alloy
-      - prometheus
-      - tempo
-      - loki
-
 volumes:
   postgres_data:
-  alloy_data:
-  loki_data:
-  prometheus_data:
-  tempo_data:
-  grafana_data:

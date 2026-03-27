@@ -1,5 +1,3 @@
-import logging
-
 from aiogram import F, Router
 from aiogram.types import CallbackQuery
 from dishka.integrations.aiogram import FromDishka, inject
@@ -11,6 +9,7 @@ from src.application.user.interactors.update_language import (
 from src.domain.user import UserRepository
 from src.domain.user.vo import LanguageCode, UserId
 from src.infrastructure.i18n import TranslatorHub, TranslatorRunner
+from src.infrastructure.logging import get_logger
 from src.presentation.bot.utils import edit_or_answer
 from src.presentation.bot.utils.cb_data import (
     LanguageCBData,
@@ -23,7 +22,7 @@ from src.presentation.bot.utils.markups.settings import (
     get_welcome_keyboard,
 )
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 router = Router(name="settings")
 
@@ -35,7 +34,11 @@ async def settings_menu(
     i18n: TranslatorRunner,
 ) -> None:
     """Handle Settings button from main menu."""
-    logger.info("User %s opened settings menu", callback.from_user.id)
+    logger.info(
+        event="settings_menu_opened",
+        message="User opened settings menu",
+        user_id=callback.from_user.id,
+    )
     await edit_or_answer(
         update=callback,
         text=i18n.settings_title(),
@@ -52,7 +55,11 @@ async def language_menu(
     user_repository: FromDishka[UserRepository],
 ) -> None:
     """Handle Language button in settings."""
-    logger.info("User %s opened language menu", callback.from_user.id)
+    logger.info(
+        event="language_menu_opened",
+        message="User opened language menu",
+        user_id=callback.from_user.id,
+    )
     user_id = UserId(callback.from_user.id)
     user = await user_repository.get_user(user_id)
     current_language = user.language_code if user else None
@@ -77,7 +84,10 @@ async def change_language(
     user_id = UserId(callback.from_user.id)
     new_language = LanguageCode(callback_data.code)
     logger.info(
-        "User %s changing language to %s", callback.from_user.id, new_language.value
+        event="language_change_requested",
+        message="User changed language",
+        user_id=callback.from_user.id,
+        language_code=new_language.value,
     )
 
     await interactor(
@@ -106,7 +116,11 @@ async def back_to_main_menu(
     user_repository: FromDishka[UserRepository],
 ) -> None:
     """Handle Back button to return to main menu."""
-    logger.info("User %s returned to main menu from settings", callback.from_user.id)
+    logger.info(
+        event="settings_menu_closed",
+        message="User returned to main menu from settings",
+        user_id=callback.from_user.id,
+    )
     user_id = UserId(callback.from_user.id)
     user = await user_repository.get_user(user_id)
 

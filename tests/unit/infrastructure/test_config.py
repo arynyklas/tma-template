@@ -9,9 +9,9 @@ import yaml
 from src.infrastructure.config import (
     AuthConfig,
     Config,
-    MetricsConfig,
     PostgresConfig,
     TelegramConfig,
+    TelemetryConfig,
     load_config,
 )
 
@@ -108,12 +108,12 @@ class TestPostgresConfig:
     @pytest.mark.parametrize(
         "port,echo,should_raise",
         [
-            ("invalid_port", False, True),  # Invalid port type
-            (5432, "invalid", True),  # Invalid echo type
-            (-1, False, True),  # Negative port
-            (65536, False, True),  # High port (invalid)
-            (5432, True, False),  # Valid config
-            (3306, False, False),  # Valid different port
+            ("invalid_port", False, True),
+            (5432, "invalid", True),
+            (-1, False, True),
+            (65536, False, True),
+            (5432, True, False),
+            (3306, False, False),
         ],
     )
     def test_port_and_echo_validation(self, port, echo, should_raise):
@@ -156,12 +156,7 @@ class TestPostgresConfig:
 
     @pytest.mark.parametrize(
         "port",
-        [
-            0,  # Port number too low
-            65536,  # Port number too high
-            -1,  # Negative port number
-            "not-a-number",  # Invalid type
-        ],
+        [0, 65536, -1, "not-a-number"],
     )
     def test_invalid_ports(self, port):
         with pytest.raises(ValidationError):
@@ -189,11 +184,11 @@ class TestAuthConfig:
     @pytest.mark.parametrize(
         "expire_minutes,should_raise,expected",
         [
-            ("invalid", True, None),  # Invalid type
-            (30, False, 30),  # Valid positive
-            (-1, False, -1),  # Negative (allowed)
-            (0, False, 0),  # Zero (allowed)
-            (60, False, 60),  # Different valid value
+            ("invalid", True, None),
+            (30, False, 30),
+            (-1, False, -1),
+            (0, False, 0),
+            (60, False, 60),
         ],
     )
     def test_expire_minutes_validation(self, expire_minutes, should_raise, expected):
@@ -213,14 +208,21 @@ class TestAuthConfig:
             assert config.access_token_expire_minutes == expected
 
 
-class TestMetricsConfig:
+class TestTelemetryConfig:
     def test_valid_config(self):
-        config = MetricsConfig.model_validate(
-            {"api_base": "https://metrics.example.com/v1", "secret": "metrics-secret"}
+        config = TelemetryConfig.model_validate(
+            {
+                "alloy_base": "https://alloy.example.com",
+                "secret": "telemetry-secret",
+                "export_metrics": True,
+                "export_traces": True,
+            }
         )
 
-        assert str(config.api_base) == "https://metrics.example.com/v1"
-        assert config.secret == "metrics-secret"
+        assert str(config.alloy_base) == "https://alloy.example.com/"
+        assert config.secret == "telemetry-secret"
+        assert config.export_metrics is True
+        assert config.export_traces is True
 
 
 class TestTelegramConfig:
@@ -241,11 +243,7 @@ class TestTelegramConfig:
 
     def test_bot_username_required(self):
         with pytest.raises(ValidationError):
-            TelegramConfig(
-                bot_token="token",
-                admin_ids=[1],
-                # bot_username missing
-            )
+            TelegramConfig(bot_token="token", admin_ids=[1])
 
     def test_bot_username_valid(self):
         config = TelegramConfig(
@@ -283,8 +281,13 @@ class TestConfig:
             algorithm="HS256",
             access_token_expire_minutes=30,
         )
-        metrics_config = MetricsConfig.model_validate(
-            {"api_base": "https://metrics.example.com/v1", "secret": "metrics-secret"}
+        telemetry_config = TelemetryConfig.model_validate(
+            {
+                "alloy_base": "https://alloy.example.com",
+                "secret": "telemetry-secret",
+                "export_metrics": True,
+                "export_traces": True,
+            }
         )
         telegram_config = TelegramConfig(
             bot_token="123456789:ABCdefGHIjklMNOpqrsTUVwxyz",
@@ -295,20 +298,17 @@ class TestConfig:
         config = Config(
             postgres=postgres_config,
             auth=auth_config,
-            metrics=metrics_config,
+            telemetry=telemetry_config,
             telegram=telegram_config,
         )
         assert config.postgres == postgres_config
         assert config.auth == auth_config
-        assert config.metrics == metrics_config
+        assert config.telemetry == telemetry_config
         assert config.telegram == telegram_config
 
     @pytest.mark.parametrize(
         "postgres,should_raise",
-        [
-            (None, True),  # Missing postgres config
-            ("invalid", True),  # Invalid postgres config
-        ],
+        [(None, True), ("invalid", True)],
     )
     def test_config_validation(self, postgres, should_raise):
         if should_raise:
@@ -332,9 +332,11 @@ class TestLoadConfig:
                 "algorithm": "HS256",
                 "access_token_expire_minutes": 30,
             },
-            "metrics": {
-                "api_base": "https://metrics.example.com/v1",
-                "secret": "metrics-secret",
+            "telemetry": {
+                "alloy_base": "https://alloy.example.com",
+                "secret": "telemetry-secret",
+                "export_metrics": True,
+                "export_traces": True,
             },
             "telegram": {
                 "bot_token": "123456789:ABCdefGHIjklMNOpqrsTUVwxyz",
@@ -360,8 +362,8 @@ class TestLoadConfig:
             assert config.auth.secret_key == "3d1b2a2127de6f65804364813b3107b2"
             assert config.auth.algorithm == "HS256"
             assert config.auth.access_token_expire_minutes == 30
-            assert str(config.metrics.api_base) == "https://metrics.example.com/v1"
-            assert config.metrics.secret == "metrics-secret"
+            assert str(config.telemetry.alloy_base) == "https://alloy.example.com/"
+            assert config.telemetry.secret == "telemetry-secret"
             assert config.telegram.bot_token == "123456789:ABCdefGHIjklMNOpqrsTUVwxyz"
         finally:
             Path(temp_file).unlink()
@@ -380,9 +382,11 @@ class TestLoadConfig:
                 "algorithm": "HS256",
                 "access_token_expire_minutes": 30,
             },
-            "metrics": {
-                "api_base": "https://metrics.example.com/v1",
-                "secret": "metrics-secret",
+            "telemetry": {
+                "alloy_base": "https://alloy.example.com",
+                "secret": "telemetry-secret",
+                "export_metrics": True,
+                "export_traces": True,
             },
             "telegram": {
                 "bot_token": "123456789:ABCdefGHIjklMNOpqrsTUVwxyz",
@@ -406,9 +410,9 @@ class TestLoadConfig:
                         == "123456789:ABCdefGHIjklMNOpqrsTUVwxyz"
                     )
                     assert (
-                        str(config.metrics.api_base) == "https://metrics.example.com/v1"
+                        str(config.telemetry.alloy_base) == "https://alloy.example.com/"
                     )
-                    assert config.metrics.secret == "metrics-secret"
+                    assert config.telemetry.secret == "telemetry-secret"
 
     def test_load_config_missing_file(self):
         with pytest.raises(FileNotFoundError):
@@ -494,9 +498,11 @@ class TestLoadConfig:
                 "algorithm": "HS256",
                 "access_token_expire_minutes": 30,
             },
-            "metrics": {
-                "api_base": "https://metrics.example.com/v1",
-                "secret": "metrics-secret",
+            "telemetry": {
+                "alloy_base": "https://alloy.example.com",
+                "secret": "telemetry-secret",
+                "export_metrics": True,
+                "export_traces": True,
             },
             "telegram": {
                 "bot_token": "123456789:ABCdefGHIjklMNOpqrsTUVwxyz",
@@ -533,9 +539,11 @@ class TestLoadConfig:
                 "algorithm": "HS256",
                 "access_token_expire_minutes": 30,
             },
-            "metrics": {
-                "api_base": "https://metrics.example.com/v1",
-                "secret": "metrics-secret",
+            "telemetry": {
+                "alloy_base": "https://alloy.example.com",
+                "secret": "telemetry-secret",
+                "export_metrics": True,
+                "export_traces": True,
             },
             "telegram": {
                 "bot_token": "123456789:ABCdefGHIjklMNOpqrsTUVwxyz",
@@ -567,9 +575,11 @@ class TestLoadConfig:
                 "algorithm": "HS256",
                 "access_token_expire_minutes": 30,
             },
-            "metrics": {
-                "api_base": "https://metrics.example.com/v1",
-                "secret": "metrics-secret",
+            "telemetry": {
+                "alloy_base": "https://alloy.example.com",
+                "secret": "telemetry-secret",
+                "export_metrics": True,
+                "export_traces": True,
             },
             "telegram": {
                 "bot_token": "123456789:ABCdefGHIjklMNOpqrsTUVwxyz",
