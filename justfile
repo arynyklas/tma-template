@@ -1,7 +1,7 @@
 set shell := ["bash", "-cu"]
 set windows-shell := ["cmd.exe", "/c"]
 
-# Docker Compose shortcuts
+# Local Docker shortcuts
 up:
     docker compose up -d
 
@@ -10,6 +10,19 @@ down:
 
 restart:
     docker compose restart
+
+# Production Docker
+prod-up:
+    docker compose -f docker-compose.prod.yml up -d
+
+prod-down:
+    docker compose -f docker-compose.prod.yml down
+
+prod-restart:
+    docker compose -f docker-compose.prod.yml restart
+
+prod-logs:
+    docker compose -f docker-compose.prod.yml logs -f
 
 # Clean up
 clean:

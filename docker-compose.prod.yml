@@ -5,6 +5,8 @@ services:
   postgres:
     image: postgres:17-alpine
     container_name: ${APP_NAME}_prod_postgres
+    env_file:
+      - .env.prod
     environment:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
@@ -22,6 +24,8 @@ services:
   alloy:
     image: grafana/alloy:v1.14.2
     container_name: ${APP_NAME}_prod_alloy
+    env_file:
+      - .env.prod
     command:
       - run
       - /etc/alloy/config.alloy
@@ -43,6 +47,8 @@ services:
   loki:
     image: grafana/loki:3.7
     container_name: ${APP_NAME}_prod_loki
+    env_file:
+      - .env.prod
     user: "0"
     command:
       - -config.file=/etc/loki/loki.yaml
@@ -55,6 +61,8 @@ services:
   prometheus:
     image: prom/prometheus:v3.10.0
     container_name: ${APP_NAME}_prod_prometheus
+    env_file:
+      - .env.prod
     command:
       - --config.file=/etc/prometheus/prometheus.yml
       - --storage.tsdb.path=/prometheus
@@ -69,6 +77,8 @@ services:
   tempo:
     image: grafana/tempo:2.10.3
     container_name: ${APP_NAME}_prod_tempo
+    env_file:
+      - .env.prod
     command:
       - -config.file=/etc/tempo.yaml
     ports:
@@ -80,6 +90,8 @@ services:
   grafana:
     image: grafana/grafana-oss:12.4.2
     container_name: ${APP_NAME}_prod_grafana
+    env_file:
+      - .env.prod
     ports:
       - "${GRAFANA_PORT:-3000}:3000"
     volumes:
@@ -96,6 +108,8 @@ services:
 
   alembic:
     container_name: ${APP_NAME}_prod_alembic
+    env_file:
+      - .env.prod
     build:
       context: .
       dockerfile: docker/Dockerfile
@@ -110,6 +124,8 @@ services:
 
   bot:
     container_name: ${APP_NAME}_prod_bot
+    env_file:
+      - .env.prod
     build:
       context: .
       dockerfile: docker/Dockerfile
@@ -124,6 +140,8 @@ services:
 
   api:
     container_name: ${APP_NAME}_prod_api
+    env_file:
+      - .env.prod
     build:
       context: .
       dockerfile: docker/Dockerfile
