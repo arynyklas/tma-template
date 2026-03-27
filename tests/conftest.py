@@ -11,8 +11,7 @@ def test_config() -> Config:
 
     if os.environ.get("POSTGRES_TEST_HOST"):
         config.postgres.host = os.environ["POSTGRES_TEST_HOST"]
-
-    elif os.environ.get("POSTGRES_TEST_PORT"):
+    if os.environ.get("POSTGRES_TEST_PORT"):
         config.postgres.port = int(os.environ["POSTGRES_TEST_PORT"])
 
     return config
