@@ -89,7 +89,7 @@ def prepare_app(config: Config) -> Litestar:
         plugins=[
             OpenTelemetryPlugin(otel_config),
         ],
-        logging_config=None,  # We manage logging ourselves via structlog
+        logging_config=None,  # logging is configured separately, via structlog
         middleware=[
             AccessLogMiddleware(),
             prometheus_config.middleware,
