@@ -16,7 +16,6 @@ from src.presentation.api.security import (
     create_jwt_auth,
     decode_token_to_user_id,
     get_optional_user_from_request,
-    require_secret,
 )
 
 
@@ -27,9 +26,6 @@ def mock_config() -> Mock:
     auth_config.secret_key = "3d1b2a2127de6f65804364813b3107b2"
     auth_config.algorithm = "HS256"
     config.auth = auth_config
-    telemetry_config = Mock()
-    telemetry_config.secret = "metrics-secret"
-    config.telemetry = telemetry_config
     return config
 
 
@@ -133,16 +129,3 @@ class TestOptionalRequestAuth:
 
         with pytest.raises(NotAuthorizedException, match="Invalid token"):
             get_optional_user_from_request(request, mock_config)
-
-
-class TestMetricsSecretAuth:
-    def test_valid_metrics_secret_allows_access(self, mock_config: Mock) -> None:
-        request = _create_request(auth_header="Bearer metrics-secret")
-
-        assert require_secret(request, mock_config.telemetry.secret) is None
-
-    def test_invalid_metrics_secret_returns_401(self, mock_config: Mock) -> None:
-        request = _create_request(auth_header="Bearer wrong-secret")
-
-        with pytest.raises(NotAuthorizedException, match="Invalid secret"):
-            require_secret(request, mock_config.telemetry.secret)

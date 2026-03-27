@@ -41,14 +41,3 @@ class TestOpenAPI:
 
         assert "security" not in schema["paths"]["/users/profile"]["get"]
         assert schema["security"] == [{"BearerToken": []}]
-
-    async def test_metrics_route_requires_private_bearer_security(
-        self, test_client: AsyncClient
-    ) -> None:
-        schema = await self._get_schema(test_client)
-
-        assert schema["paths"]["/metrics"]["get"]["security"] == [{"BearerToken": []}]
-        assert (
-            schema["paths"]["/metrics"]["get"]["description"]
-            == "Expose Prometheus metrics for authenticated scraping."
-        )

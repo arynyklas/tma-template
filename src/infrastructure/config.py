@@ -32,7 +32,6 @@ class AuthConfig(BaseModel):
 
 class TelemetryConfig(BaseModel):
     alloy_base: HttpUrl = Field(description="Base URL for Alloy OTLP HTTP receiver")
-    secret: str = Field(min_length=1)
     export_metrics: bool = True
     export_traces: bool = True
 

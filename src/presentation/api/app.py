@@ -5,7 +5,6 @@ from litestar.contrib.opentelemetry import OpenTelemetryConfig, OpenTelemetryPlu
 from litestar.exceptions import ClientException, NotAuthorizedException
 from litestar.openapi.config import OpenAPIConfig
 from litestar.openapi.plugins import ScalarRenderPlugin
-from litestar.plugins.prometheus import PrometheusConfig
 from opentelemetry import metrics, trace
 from opentelemetry.exporter.otlp.proto.http.metric_exporter import OTLPMetricExporter
 from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
@@ -83,8 +82,6 @@ def prepare_app(config: Config) -> Litestar:
 
     otel_config = _get_otel_config(config)
 
-    prometheus_config = PrometheusConfig(group_path=False)
-
     return Litestar(
         route_handlers=[routes],
         plugins=[
@@ -93,7 +90,6 @@ def prepare_app(config: Config) -> Litestar:
         logging_config=None,  # We manage logging ourselves via structlog
         middleware=[
             AccessLogMiddleware(),
-            prometheus_config.middleware,
         ],
         on_app_init=[jwt_auth.on_app_init],
         openapi_config=OpenAPIConfig(

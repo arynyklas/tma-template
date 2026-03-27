@@ -213,14 +213,12 @@ class TestTelemetryConfig:
         config = TelemetryConfig.model_validate(
             {
                 "alloy_base": "https://alloy.example.com",
-                "secret": "telemetry-secret",
                 "export_metrics": True,
                 "export_traces": True,
             }
         )
 
         assert str(config.alloy_base) == "https://alloy.example.com/"
-        assert config.secret == "telemetry-secret"
         assert config.export_metrics is True
         assert config.export_traces is True
 
@@ -284,7 +282,6 @@ class TestConfig:
         telemetry_config = TelemetryConfig.model_validate(
             {
                 "alloy_base": "https://alloy.example.com",
-                "secret": "telemetry-secret",
                 "export_metrics": True,
                 "export_traces": True,
             }
@@ -334,7 +331,6 @@ class TestLoadConfig:
             },
             "telemetry": {
                 "alloy_base": "https://alloy.example.com",
-                "secret": "telemetry-secret",
                 "export_metrics": True,
                 "export_traces": True,
             },
@@ -363,7 +359,6 @@ class TestLoadConfig:
             assert config.auth.algorithm == "HS256"
             assert config.auth.access_token_expire_minutes == 30
             assert str(config.telemetry.alloy_base) == "https://alloy.example.com/"
-            assert config.telemetry.secret == "telemetry-secret"
             assert config.telegram.bot_token == "123456789:ABCdefGHIjklMNOpqrsTUVwxyz"
         finally:
             Path(temp_file).unlink()
@@ -384,7 +379,6 @@ class TestLoadConfig:
             },
             "telemetry": {
                 "alloy_base": "https://alloy.example.com",
-                "secret": "telemetry-secret",
                 "export_metrics": True,
                 "export_traces": True,
             },
@@ -412,7 +406,6 @@ class TestLoadConfig:
                     assert (
                         str(config.telemetry.alloy_base) == "https://alloy.example.com/"
                     )
-                    assert config.telemetry.secret == "telemetry-secret"
 
     def test_load_config_missing_file(self):
         with pytest.raises(FileNotFoundError):
@@ -500,7 +493,6 @@ class TestLoadConfig:
             },
             "telemetry": {
                 "alloy_base": "https://alloy.example.com",
-                "secret": "telemetry-secret",
                 "export_metrics": True,
                 "export_traces": True,
             },
@@ -541,7 +533,6 @@ class TestLoadConfig:
             },
             "telemetry": {
                 "alloy_base": "https://alloy.example.com",
-                "secret": "telemetry-secret",
                 "export_metrics": True,
                 "export_traces": True,
             },
@@ -577,7 +568,6 @@ class TestLoadConfig:
             },
             "telemetry": {
                 "alloy_base": "https://alloy.example.com",
-                "secret": "telemetry-secret",
                 "export_metrics": True,
                 "export_traces": True,
             },

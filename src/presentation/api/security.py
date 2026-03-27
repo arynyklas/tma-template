@@ -78,14 +78,6 @@ def get_optional_user_from_request(
     return decode_token_to_user_id(encoded_token=encoded_token, config=config)
 
 
-def require_secret(
-    request: Request[Any, Any, Any] | ASGIConnection, valid_secret: str
-) -> None:
-    header_secret = _extract_bearer_token(request.headers.get("Authorization"))
-    if header_secret != valid_secret:
-        raise NotAuthorizedException("Invalid secret")
-
-
 def create_jwt_auth(config: Config) -> JWTAuth[UserId, Token]:
     def retrieve_user_handler(
         token: Token, _: ASGIConnection[Any, Any, Any, Any]

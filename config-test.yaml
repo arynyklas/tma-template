@@ -19,6 +19,5 @@ auth:
 
 telemetry:
   alloy_base: "http://localhost:4318"
-  secret: "7e61a6d205e284d9caac515beac455c5aa66b6f660ff8883d893df9346039b72"
   export_metrics: false
   export_traces: false

@@ -23,6 +23,5 @@ auth:
 
 telemetry:
   alloy_base: "http://localhost:4318"
-  secret: "7e61a6d205e284d9caac515beac455c5aa66b6f660ff8883d893df9346039b72"  # openssl rand -hex 32
   export_metrics: true  # for prod set to true, for dev and test set to false
   export_traces: true  # for prod set to true, for dev and test set to false
