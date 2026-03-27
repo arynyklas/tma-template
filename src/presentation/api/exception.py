@@ -27,10 +27,22 @@ class ValidationErrorResponse(CamelModel):
     errors: list[FieldError]
 
 
-def custom_exception_handler(_: Request, exc: Exception) -> Response[ErrorResponse]:
+def _request_context(request: Request) -> dict[str, str]:
+    return {
+        "request_method": request.method,
+        "request_path": request.url.path,
+        "request_query": request.url.query,
+    }
+
+
+def custom_exception_handler(
+    request: Request, exc: Exception
+) -> Response[ErrorResponse]:
     logger.exception(
         event="internal_server_error",
         message="Internal server error",
+        error_type=type(exc).__name__,
+        **_request_context(request),
     )
 
     return Response(
@@ -66,13 +78,14 @@ def validation_error_handler(
 
 
 def application_error_handler(
-    _: Request, exc: ApplicationError
+    request: Request, exc: ApplicationError
 ) -> Response[ErrorResponse]:
     logger.exception(
         event="application_error",
         message="Application error",
         error_message=exc.message,
         status_code=exc.status_code,
+        **_request_context(request),
     )
 
     return Response(

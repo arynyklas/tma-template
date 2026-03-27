@@ -17,6 +17,7 @@ from src.infrastructure.di import (
 )
 from src.infrastructure.i18n import DEFAULT_LANGUAGE, TranslatorHub
 from src.infrastructure.logging import configure_logging, get_logger
+from src.infrastructure.telemetry import init_sentry
 from src.presentation.bot.middleware.user_and_locale import UserAndLocaleMiddleware
 from src.presentation.bot.routers import setup_routers
 
@@ -44,6 +45,7 @@ async def main() -> None:
     configure_logging("tma-template-bot")
 
     config = load_config()
+    init_sentry(config.telemetry, service_name="tma-template-bot")
 
     bot = Bot(
         token=config.telegram.bot_token,

@@ -109,9 +109,10 @@ services:
     container_name: ${APP_NAME}_prod_alembic
     env_file:
       - .env.prod
-    build:
-      context: .
-      dockerfile: docker/Dockerfile
+    image: ghcr.io/arynyklas/tma-template/tma-template/backend:${BACKEND_TAG:-main-latest}
+    environment:
+      SENTRY_RELEASE: ${SENTRY_RELEASE}
+      SENTRY_ENVIRONMENT: ${SENTRY_ENVIRONMENT}
     entrypoint: ["/app/entrypoint-alembic.sh"]
     volumes:
       - ./config-prod.yaml:/app/config.yaml:ro
@@ -125,9 +126,10 @@ services:
     container_name: ${APP_NAME}_prod_bot
     env_file:
       - .env.prod
-    build:
-      context: .
-      dockerfile: docker/Dockerfile
+    image: ghcr.io/arynyklas/tma-template/tma-template/backend:${BACKEND_TAG:-main-latest}
+    environment:
+      SENTRY_RELEASE: ${SENTRY_RELEASE}
+      SENTRY_ENVIRONMENT: ${SENTRY_ENVIRONMENT}
     entrypoint: ["/app/entrypoint-bot.sh"]
     volumes:
       - ./config-prod.yaml:/app/config.yaml:ro
@@ -141,14 +143,14 @@ services:
     container_name: ${APP_NAME}_prod_api
     env_file:
       - .env.prod
-    build:
-      context: .
-      dockerfile: docker/Dockerfile
+    image: ghcr.io/arynyklas/tma-template/tma-template/backend:${BACKEND_TAG:-main-latest}
     entrypoint: ["/app/entrypoint-api.sh"]
     ports:
       - "8080:8080"
     environment:
       API_WORKERS: ${API_WORKERS}
+      SENTRY_RELEASE: ${SENTRY_RELEASE}
+      SENTRY_ENVIRONMENT: ${SENTRY_ENVIRONMENT}
     volumes:
       - ./config-prod.yaml:/app/config.yaml:ro
     depends_on:
@@ -161,7 +163,7 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 40s
+      start_period: 30s
 
 volumes:
   postgres_data:

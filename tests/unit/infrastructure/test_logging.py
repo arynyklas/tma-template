@@ -20,6 +20,7 @@ from src.infrastructure.logging import (
     get_logger,
     is_json_logs_enabled,
 )
+from src.infrastructure.telemetry.sentry import build_sentry_logging_integration
 
 
 class TestLoggingConfiguration:
@@ -177,3 +178,31 @@ class TestLoggingConfiguration:
         assert payload["message"] == "Plain stdlib message"
         assert payload["logger"] == "stdlib.test"
         assert payload["level"] == "info"
+
+    def test_sentry_logging_integration_disables_breadcrumbs(self) -> None:
+        integration = build_sentry_logging_integration()
+
+        assert integration._handler.level == logging.ERROR
+        assert integration._breadcrumb_handler is None
+        assert integration._sentry_logs_handler.level == logging.INFO
+
+    def test_stdlib_exception_logs_reach_console(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        monkeypatch.setenv(LOG_JSON_ENV_VAR, "true")
+        output = StringIO()
+        monkeypatch.setattr("sys.stdout", output)
+
+        configure_logging()
+
+        try:
+            raise RuntimeError("boom")
+        except RuntimeError:
+            logging.getLogger("stdlib.test").exception("Plain stdlib exception")
+
+        payload = json.loads(output.getvalue().strip())
+        assert payload["event"] == "Plain stdlib exception"
+        assert payload["message"] == "Plain stdlib exception"
+        assert payload["logger"] == "stdlib.test"
+        assert payload["level"] == "error"
+        assert "exception" in payload

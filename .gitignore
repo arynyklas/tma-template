@@ -16,6 +16,7 @@ config*.yaml
 !config-example.yaml
 !config-test.yaml
 .claude/reports
+certs/
 
 .coverage
 coverage.xml

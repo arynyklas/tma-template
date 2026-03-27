@@ -25,6 +25,7 @@ dependencies = [
     "opentelemetry-sdk>=1.40.0",
     "opentelemetry-exporter-otlp>=1.40.0",
     "structlog>=25.5.0",
+    "sentry-sdk>=2.35.0",
 ]
 
 [dependency-groups]

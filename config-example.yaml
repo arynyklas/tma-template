@@ -25,3 +25,7 @@ telemetry:
   alloy_base: "http://localhost:4318"
   export_metrics: true  # for prod set to true, for dev and test set to false
   export_traces: true  # for prod set to true, for dev and test set to false
+  sentry_dsn: null
+  sentry_environment: "development"
+  sentry_release: null
+  sentry_traces_sample_rate: 1.0

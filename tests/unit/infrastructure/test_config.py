@@ -209,7 +209,28 @@ class TestAuthConfig:
 
 
 class TestTelemetryConfig:
-    def test_valid_config(self):
+    def test_valid_config_with_sentry(self) -> None:
+        config = TelemetryConfig.model_validate(
+            {
+                "alloy_base": "https://alloy.example.com",
+                "export_metrics": True,
+                "export_traces": True,
+                "sentry_dsn": "https://public@example.ingest.sentry.io/123",
+                "sentry_environment": "production",
+                "sentry_release": "backend@prod-a1b2c3d",
+                "sentry_traces_sample_rate": 1.0,
+            }
+        )
+
+        assert str(config.alloy_base) == "https://alloy.example.com/"
+        assert config.export_metrics is True
+        assert config.export_traces is True
+        assert str(config.sentry_dsn) == "https://public@example.ingest.sentry.io/123"
+        assert config.sentry_environment == "production"
+        assert config.sentry_release == "backend@prod-a1b2c3d"
+        assert config.sentry_traces_sample_rate == 1.0
+
+    def test_valid_config_without_sentry(self) -> None:
         config = TelemetryConfig.model_validate(
             {
                 "alloy_base": "https://alloy.example.com",
@@ -221,6 +242,10 @@ class TestTelemetryConfig:
         assert str(config.alloy_base) == "https://alloy.example.com/"
         assert config.export_metrics is True
         assert config.export_traces is True
+        assert config.sentry_dsn is None
+        assert config.sentry_environment is None
+        assert config.sentry_release is None
+        assert config.sentry_traces_sample_rate == 1.0
 
 
 class TestTelegramConfig:
@@ -333,6 +358,10 @@ class TestLoadConfig:
                 "alloy_base": "https://alloy.example.com",
                 "export_metrics": True,
                 "export_traces": True,
+                "sentry_dsn": None,
+                "sentry_environment": None,
+                "sentry_release": None,
+                "sentry_traces_sample_rate": 1.0,
             },
             "telegram": {
                 "bot_token": "123456789:ABCdefGHIjklMNOpqrsTUVwxyz",
@@ -381,6 +410,10 @@ class TestLoadConfig:
                 "alloy_base": "https://alloy.example.com",
                 "export_metrics": True,
                 "export_traces": True,
+                "sentry_dsn": None,
+                "sentry_environment": None,
+                "sentry_release": None,
+                "sentry_traces_sample_rate": 1.0,
             },
             "telegram": {
                 "bot_token": "123456789:ABCdefGHIjklMNOpqrsTUVwxyz",
@@ -495,6 +528,10 @@ class TestLoadConfig:
                 "alloy_base": "https://alloy.example.com",
                 "export_metrics": True,
                 "export_traces": True,
+                "sentry_dsn": None,
+                "sentry_environment": None,
+                "sentry_release": None,
+                "sentry_traces_sample_rate": 1.0,
             },
             "telegram": {
                 "bot_token": "123456789:ABCdefGHIjklMNOpqrsTUVwxyz",
@@ -535,6 +572,10 @@ class TestLoadConfig:
                 "alloy_base": "https://alloy.example.com",
                 "export_metrics": True,
                 "export_traces": True,
+                "sentry_dsn": None,
+                "sentry_environment": None,
+                "sentry_release": None,
+                "sentry_traces_sample_rate": 1.0,
             },
             "telegram": {
                 "bot_token": "123456789:ABCdefGHIjklMNOpqrsTUVwxyz",
@@ -570,6 +611,10 @@ class TestLoadConfig:
                 "alloy_base": "https://alloy.example.com",
                 "export_metrics": True,
                 "export_traces": True,
+                "sentry_dsn": None,
+                "sentry_environment": None,
+                "sentry_release": None,
+                "sentry_traces_sample_rate": 1.0,
             },
             "telegram": {
                 "bot_token": "123456789:ABCdefGHIjklMNOpqrsTUVwxyz",

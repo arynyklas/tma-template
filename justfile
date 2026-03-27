@@ -1,6 +1,8 @@
 set shell := ["bash", "-cu"]
 set windows-shell := ["cmd.exe", "/c"]
 
+set dotenv-load := true
+
 # Local Docker shortcuts
 up:
     docker compose up -d

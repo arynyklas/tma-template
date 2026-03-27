@@ -25,6 +25,7 @@ from src.infrastructure.di import interactor_providers
 from src.infrastructure.di.auth import AuthProvider
 from src.infrastructure.di.db import DBProvider
 from src.infrastructure.logging import configure_logging
+from src.infrastructure.telemetry import init_sentry
 
 from .access_log import AccessLogMiddleware
 from .exception import (
@@ -120,6 +121,7 @@ def create_app() -> Litestar:
     configure_logging("tma-template-api")
 
     config = load_config()
+    init_sentry(config.telemetry, service_name="tma-template-api")
 
     auth_service: AuthService = AuthServiceImpl(config)
     app = prepare_app(config)
