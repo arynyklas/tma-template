@@ -14,6 +14,7 @@ todos.txt
 
 config*.yaml
 !config-example.yaml
+!config-prod-example.yaml
 !config-test.yaml
 .claude/reports
 certs/

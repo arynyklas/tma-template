@@ -21,3 +21,5 @@ telemetry:
   alloy_base: "http://localhost:4318"
   export_metrics: false
   export_traces: false
+  sentry_dsn: null
+  sentry_traces_sample_rate: 1.0

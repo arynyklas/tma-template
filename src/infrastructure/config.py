@@ -35,8 +35,6 @@ class TelemetryConfig(BaseModel):
     export_metrics: bool = True
     export_traces: bool = True
     sentry_dsn: HttpUrl | None = Field(default=None, description="Sentry DSN")
-    sentry_environment: str | None = None
-    sentry_release: str | None = None
     sentry_traces_sample_rate: float = Field(default=1.0, ge=0.0, le=1.0)
     sentry_ca_certs: str | None = Field(
         default=None,

@@ -22,8 +22,8 @@ auth:
   access_token_expire_minutes: 30
 
 telemetry:
-  alloy_base: "http://localhost:4318"
-  export_metrics: true  # for prod set to true, for dev and test set to false
-  export_traces: true  # for prod set to true, for dev and test set to false
+  alloy_base: "http://alloy:4318"
+  export_metrics: true
+  export_traces: true
   sentry_dsn: null
   sentry_traces_sample_rate: 1.0

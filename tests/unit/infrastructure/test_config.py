@@ -216,8 +216,6 @@ class TestTelemetryConfig:
                 "export_metrics": True,
                 "export_traces": True,
                 "sentry_dsn": "https://public@example.ingest.sentry.io/123",
-                "sentry_environment": "production",
-                "sentry_release": "backend@prod-a1b2c3d",
                 "sentry_traces_sample_rate": 1.0,
             }
         )
@@ -226,8 +224,6 @@ class TestTelemetryConfig:
         assert config.export_metrics is True
         assert config.export_traces is True
         assert str(config.sentry_dsn) == "https://public@example.ingest.sentry.io/123"
-        assert config.sentry_environment == "production"
-        assert config.sentry_release == "backend@prod-a1b2c3d"
         assert config.sentry_traces_sample_rate == 1.0
 
     def test_valid_config_without_sentry(self) -> None:
@@ -243,8 +239,6 @@ class TestTelemetryConfig:
         assert config.export_metrics is True
         assert config.export_traces is True
         assert config.sentry_dsn is None
-        assert config.sentry_environment is None
-        assert config.sentry_release is None
         assert config.sentry_traces_sample_rate == 1.0
 
 
@@ -359,8 +353,6 @@ class TestLoadConfig:
                 "export_metrics": True,
                 "export_traces": True,
                 "sentry_dsn": None,
-                "sentry_environment": None,
-                "sentry_release": None,
                 "sentry_traces_sample_rate": 1.0,
             },
             "telegram": {
@@ -411,8 +403,6 @@ class TestLoadConfig:
                 "export_metrics": True,
                 "export_traces": True,
                 "sentry_dsn": None,
-                "sentry_environment": None,
-                "sentry_release": None,
                 "sentry_traces_sample_rate": 1.0,
             },
             "telegram": {
@@ -529,8 +519,6 @@ class TestLoadConfig:
                 "export_metrics": True,
                 "export_traces": True,
                 "sentry_dsn": None,
-                "sentry_environment": None,
-                "sentry_release": None,
                 "sentry_traces_sample_rate": 1.0,
             },
             "telegram": {
@@ -573,8 +561,6 @@ class TestLoadConfig:
                 "export_metrics": True,
                 "export_traces": True,
                 "sentry_dsn": None,
-                "sentry_environment": None,
-                "sentry_release": None,
                 "sentry_traces_sample_rate": 1.0,
             },
             "telegram": {
@@ -612,8 +598,6 @@ class TestLoadConfig:
                 "export_metrics": True,
                 "export_traces": True,
                 "sentry_dsn": None,
-                "sentry_environment": None,
-                "sentry_release": None,
                 "sentry_traces_sample_rate": 1.0,
             },
             "telegram": {
