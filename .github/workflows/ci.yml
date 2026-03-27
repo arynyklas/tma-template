@@ -401,7 +401,7 @@ jobs:
       contents: read
       packages: write
     env:
-      IMAGE_NAME: ghcr.io/${{ github.repository }}/tma-template/backend
+      IMAGE_NAME: ghcr.io/${{ github.repository }}/backend
     steps:
       - uses: actions/checkout@v4
 
