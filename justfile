@@ -56,6 +56,7 @@ test-db-up:
 test-db-down:
     docker compose -f docker-compose-test.yml down -v
 
+# Other dev aliases
 lint:
     uv run ruff format src tests
     uv run ruff check src tests --fix
