@@ -20,7 +20,9 @@ certs/
 
 .coverage
 coverage.xml
-.env
+.env*
+!.env.example
+!.env.prod.example
 
 # Git worktrees
 .worktrees/
