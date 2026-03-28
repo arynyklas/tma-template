@@ -6,7 +6,7 @@ from src.domain.user.vo import FirstName, LastName, UserId, Username
 
 
 @dataclass
-class UpsertUserData:
+class TelegramUserSyncData:
     id: int
     username: str | None
     first_name: str
@@ -17,11 +17,9 @@ class UserService:
     def __init__(self, user_repository: UserRepository) -> None:
         self.user_repository = user_repository
 
-    async def upsert_user(self, data: UpsertUserData) -> User:
+    async def sync_telegram_user(self, data: TelegramUserSyncData) -> User:
         user_id = UserId(data.id)
-
         existing_user = await self.user_repository.get_user(user_id)
-
         now = datetime.now(UTC)
 
         user = User(
@@ -33,11 +31,12 @@ class UserService:
             created_at=existing_user.created_at if existing_user else now,
             updated_at=now,
             last_login_at=now,
+            referred_by=existing_user.referred_by if existing_user else None,
+            referral_count=existing_user.referral_count if existing_user else None,
+            language_code=existing_user.language_code if existing_user else None,
         )
 
         if existing_user is None:
-            user = await self.user_repository.create_user(user)
-        else:
-            user = await self.user_repository.update_user(user)
+            return await self.user_repository.create_user(user)
 
-        return user
+        return await self.user_repository.update_user(user)

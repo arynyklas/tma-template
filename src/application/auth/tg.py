@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from src.application.common.interactor import Interactor
 from src.application.common.transaction import TransactionManager
 from src.application.interfaces.auth import AuthService
-from src.application.user.service import UpsertUserData, UserService
+from src.application.user.service import TelegramUserSyncData, UserService
 
 
 @dataclass
@@ -30,8 +30,8 @@ class AuthTgInteractor(Interactor[AuthTgInputDTO, AuthTgOutputDTO]):
     async def __call__(self, data: AuthTgInputDTO) -> AuthTgOutputDTO:
         parsed_data = self.auth_service.validate_init_data(data.init_data)
 
-        await self.user_service.upsert_user(
-            UpsertUserData(
+        await self.user_service.sync_telegram_user(
+            TelegramUserSyncData(
                 id=parsed_data.user_id,
                 username=parsed_data.username,
                 first_name=parsed_data.first_name,

@@ -1,7 +1,7 @@
 from dishka import Provider, Scope, provide
 
 from src.application.common.transaction import TransactionManager
-from src.application.user.create import CreateUserInteractor
+from src.application.user.create import SyncTelegramUserInteractor
 from src.application.user.get_me import GetUserProfileInteractor
 from src.application.user.interactors.update_language import UpdateLanguageInteractor
 from src.application.user.service import UserService
@@ -28,12 +28,12 @@ class UserInteractorProvider(Provider):
         )
 
     @provide
-    def provide_create_user_interactor(
+    def provide_sync_telegram_user_interactor(
         self,
         user_service: UserService,
         transaction_manager: TransactionManager,
-    ) -> CreateUserInteractor:
-        return CreateUserInteractor(
+    ) -> SyncTelegramUserInteractor:
+        return SyncTelegramUserInteractor(
             user_service=user_service,
             transaction_manager=transaction_manager,
         )

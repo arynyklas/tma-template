@@ -1,14 +1,16 @@
 from src.application.common.interactor import Interactor
 from src.application.common.transaction import TransactionManager
 from src.application.user.dtos import (
-    CreateUserInputDTO,
-    CreateUserOutputDTO,
+    SyncTelegramUserInputDTO,
+    SyncTelegramUserOutputDTO,
     entity_to_dto,
 )
-from src.application.user.service import UpsertUserData, UserService
+from src.application.user.service import TelegramUserSyncData, UserService
 
 
-class CreateUserInteractor(Interactor[CreateUserInputDTO, CreateUserOutputDTO]):
+class SyncTelegramUserInteractor(
+    Interactor[SyncTelegramUserInputDTO, SyncTelegramUserOutputDTO]
+):
     def __init__(
         self,
         user_service: UserService,
@@ -17,9 +19,11 @@ class CreateUserInteractor(Interactor[CreateUserInputDTO, CreateUserOutputDTO]):
         self.user_service = user_service
         self.transaction_manager = transaction_manager
 
-    async def __call__(self, data: CreateUserInputDTO) -> CreateUserOutputDTO:
-        user = await self.user_service.upsert_user(
-            UpsertUserData(
+    async def __call__(
+        self, data: SyncTelegramUserInputDTO
+    ) -> SyncTelegramUserOutputDTO:
+        user = await self.user_service.sync_telegram_user(
+            TelegramUserSyncData(
                 id=data.id,
                 username=data.username,
                 first_name=data.first_name,

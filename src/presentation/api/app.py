@@ -1,4 +1,3 @@
-from dishka import make_async_container
 from dishka.integrations.litestar import setup_dishka
 from litestar import Litestar
 from litestar.contrib.opentelemetry import OpenTelemetryConfig, OpenTelemetryPlugin
@@ -20,12 +19,8 @@ from src.application.auth.exceptions import InvalidInitDataError
 from src.application.common.exceptions import ApplicationError, ValidationError
 from src.application.interfaces.auth import AuthService
 from src.infrastructure.auth import AuthServiceImpl
-from src.infrastructure.config import Config, load_config
-from src.infrastructure.di import interactor_providers
-from src.infrastructure.di.auth import AuthProvider
-from src.infrastructure.di.db import DBProvider
-from src.infrastructure.logging import configure_logging
-from src.infrastructure.telemetry import init_sentry
+from src.infrastructure.config import Config
+from src.infrastructure.di import AuthProvider, DBProvider, bootstrap_service
 
 from .access_log import AccessLogMiddleware
 from .exception import (
@@ -118,28 +113,16 @@ def prepare_app(config: Config) -> Litestar:
 
 
 def create_app() -> Litestar:
-    configure_logging("tma-template-api")
-
-    config = load_config()
-    init_sentry(config.telemetry, service_name="tma-template-api")
-
-    auth_service: AuthService = AuthServiceImpl(config)
-    app = prepare_app(config)
-
-    interactor_provider_instances = [
-        interactor() for interactor in interactor_providers
-    ]
-
-    container = make_async_container(
+    bootstrap = bootstrap_service(
+        "tma-template-api",
         AuthProvider(),
         DBProvider(),
-        *interactor_provider_instances,
-        context={
-            Config: config,
-            AuthService: auth_service,
+        context_builder=lambda config: {
+            AuthService: AuthServiceImpl(config),
         },
     )
 
-    setup_dishka(container=container, app=app)
+    app = prepare_app(bootstrap.config)
+    setup_dishka(container=bootstrap.container, app=app)
 
     return app

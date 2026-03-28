@@ -1,7 +1,7 @@
-"""Middleware for loading user and i18n."""
+"""Middleware that synchronizes Telegram users and injects i18n context."""
 
 from collections.abc import Awaitable, Callable
-from typing import Any
+from typing import Any, cast
 
 from aiogram import BaseMiddleware
 from aiogram.types import TelegramObject
@@ -9,19 +9,20 @@ from aiogram.types import User as AiogramUser
 from dishka import AsyncContainer
 from dishka.integrations.aiogram import CONTAINER_NAME
 
-from src.application.user.create import CreateUserInteractor
+from src.application.user.create import SyncTelegramUserInteractor
 from src.application.user.dtos import (
-    CreateUserInputDTO,
-    CreateUserOutputDTO,
+    SyncTelegramUserInputDTO,
+    SyncTelegramUserOutputDTO,
 )
 from src.infrastructure.i18n import TranslatorHub
 from src.presentation.bot.utils.i18n import extract_language_code
 
 
 class UserAndLocaleMiddleware(BaseMiddleware):
-    """Middleware that loads and injects user and i18n.
+    """Synchronize Telegram user state and inject `user` plus `i18n`.
 
-    Adds `user` (or None) and `i18n` to handler data dict.
+    The middleware preserves persisted locale preference when available and
+    falls back to the Telegram-provided language for first-contact users.
     """
 
     async def __call__(
@@ -34,13 +35,12 @@ class UserAndLocaleMiddleware(BaseMiddleware):
         if from_user is None:
             return await handler(event, data)
 
-        container: AsyncContainer = data[CONTAINER_NAME]
-        upsert_interactor = await container.get(CreateUserInteractor)
+        container = cast(AsyncContainer, data[CONTAINER_NAME])
+        sync_user_interactor = await container.get(SyncTelegramUserInteractor)
         hub = await container.get(TranslatorHub)
 
-        # Create or update user
-        user_dto: CreateUserOutputDTO = await upsert_interactor(
-            data=CreateUserInputDTO(
+        user_dto: SyncTelegramUserOutputDTO = await sync_user_interactor(
+            data=SyncTelegramUserInputDTO(
                 id=from_user.id,
                 username=from_user.username,
                 first_name=from_user.first_name,

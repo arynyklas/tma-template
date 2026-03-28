@@ -4,7 +4,7 @@ from src.domain.user import User
 
 
 @dataclass
-class CreateUserInputDTO:
+class SyncTelegramUserInputDTO:
     id: int
     username: str | None
     first_name: str
@@ -12,7 +12,7 @@ class CreateUserInputDTO:
 
 
 @dataclass
-class CreateUserOutputDTO:
+class SyncTelegramUserOutputDTO:
     id: int
     username: str | None
     first_name: str
@@ -21,8 +21,8 @@ class CreateUserOutputDTO:
     is_new: bool = False
 
 
-def entity_to_dto(user: User) -> CreateUserOutputDTO:
-    return CreateUserOutputDTO(
+def entity_to_dto(user: User) -> SyncTelegramUserOutputDTO:
+    return SyncTelegramUserOutputDTO(
         id=user.id.value,
         username=user.username.value if user.username else None,
         first_name=user.first_name.value,

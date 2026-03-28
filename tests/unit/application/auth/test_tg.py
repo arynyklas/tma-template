@@ -78,7 +78,7 @@ class TestAuthTgInteractor:
         mock_auth_service.validate_init_data = Mock(return_value=sample_init_data_dto)
         jwt_token = "valid_jwt_token"
         mock_auth_service.create_access_token = Mock(return_value=jwt_token)
-        mock_user_service.upsert_user = AsyncMock(return_value=sample_user)
+        mock_user_service.sync_telegram_user = AsyncMock(return_value=sample_user)
         mock_transaction_manager.commit = AsyncMock()
 
         result = await interactor(sample_auth_tg_input_dto)
@@ -89,7 +89,7 @@ class TestAuthTgInteractor:
         mock_auth_service.validate_init_data.assert_called_once_with(
             sample_auth_tg_input_dto.init_data
         )
-        mock_user_service.upsert_user.assert_awaited_once()
+        mock_user_service.sync_telegram_user.assert_awaited_once()
         mock_transaction_manager.commit.assert_called_once()
         mock_auth_service.create_access_token.assert_called_once_with(
             sample_init_data_dto.user_id
@@ -111,7 +111,7 @@ class TestAuthTgInteractor:
             await interactor(sample_auth_tg_input_dto)
 
         assert "Invalid init data" in str(exc_info.value)
-        mock_user_service.upsert_user.assert_not_called()
+        mock_user_service.sync_telegram_user.assert_not_called()
         mock_transaction_manager.commit.assert_not_called()
 
     async def test_user_service_exception_propagated(
@@ -124,7 +124,7 @@ class TestAuthTgInteractor:
         sample_init_data_dto,
     ):
         mock_auth_service.validate_init_data = Mock(return_value=sample_init_data_dto)
-        mock_user_service.upsert_user = AsyncMock(
+        mock_user_service.sync_telegram_user = AsyncMock(
             side_effect=Exception("Database error")
         )
 
@@ -145,7 +145,7 @@ class TestAuthTgInteractor:
         sample_user,
     ):
         mock_auth_service.validate_init_data = Mock(return_value=sample_init_data_dto)
-        mock_user_service.upsert_user = AsyncMock(return_value=sample_user)
+        mock_user_service.sync_telegram_user = AsyncMock(return_value=sample_user)
         mock_transaction_manager.commit = AsyncMock(
             side_effect=Exception("Commit failed")
         )
