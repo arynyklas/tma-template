@@ -13,9 +13,13 @@ postgres:
   db: "template_app"
 
 auth:
-  secret_key: "3d1b2a2127de6f65804364813b3107b2"
+  secret_key: "2b8f131dfcf30c00ba5b28676dac2dcddd7c4a75637f03a4b2e57ca95810dbcc"
   algorithm: "HS256"
   access_token_expire_minutes: 30
 
-log:
-  level: "INFO"
+telemetry:
+  alloy_base: "http://localhost:4318"
+  export_metrics: false
+  export_traces: false
+  sentry_dsn: null
+  sentry_traces_sample_rate: 1.0

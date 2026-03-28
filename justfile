@@ -1,7 +1,9 @@
 set shell := ["bash", "-cu"]
 set windows-shell := ["cmd.exe", "/c"]
 
-# Docker Compose shortcuts
+set dotenv-load := true
+
+# Local Docker shortcuts
 up:
     docker compose up -d
 
@@ -10,6 +12,19 @@ down:
 
 restart:
     docker compose restart
+
+# Production Docker
+prod-up:
+    docker compose -f docker-compose.prod.yml up -d
+
+prod-down:
+    docker compose -f docker-compose.prod.yml down
+
+prod-restart:
+    docker compose -f docker-compose.prod.yml restart
+
+prod-logs:
+    docker compose -f docker-compose.prod.yml logs -f
 
 # Clean up
 clean:
@@ -26,7 +41,7 @@ status:
 
 # Presentations
 api:
-    uv run granian src.presentation.api.app:create_app --factory --port 8080 --interface asgi --log --access-log --reload
+    uv run granian src.presentation.api.app:create_app --factory --port 8080 --interface asgi --reload
 
 bot:
     uv run python -m src.presentation.bot.main
@@ -43,6 +58,7 @@ test-db-up:
 test-db-down:
     docker compose -f docker-compose-test.yml down -v
 
+# Other dev aliases
 lint:
     uv run ruff format src tests
     uv run ruff check src tests --fix

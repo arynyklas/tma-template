@@ -9,6 +9,7 @@ import pytest
 from src.domain.user.vo import UserId
 from src.infrastructure.config import Config
 from src.presentation.api.security import (
+    ACCESS_SECURED_ROUTE,
     OPTIONAL_AUTH_ROUTE,
     PUBLIC_ROUTE,
     SCHEMA_AUTH_EXCLUDE_PATTERNS,
@@ -52,6 +53,12 @@ class TestRouteSecurityOptions:
         assert PUBLIC_ROUTE == {
             "exclude_from_auth": True,
             "security": [{}],
+        }
+
+    def test_access_secured_route_marks_operation_bearer_required(self) -> None:
+        assert ACCESS_SECURED_ROUTE == {
+            "exclude_from_auth": True,
+            "security": [{"BearerToken": []}],
         }
 
     def test_optional_auth_route_marks_operation_optional(self) -> None:

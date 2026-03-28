@@ -1,6 +1,8 @@
 #!/bin/sh
 set -e
 
+export LOG_JSON=true
+
 echo "Starting Telegram Bot..."
 
 if python -m src.presentation.bot.main; then

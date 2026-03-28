@@ -1,14 +1,14 @@
 from http import HTTPStatus
-import logging
 
 from litestar import Request, Response
 from litestar.exceptions import ClientException
 from pydantic import ValidationError as PydanticValidationError
 
 from src.application.common.exceptions import ApplicationError, ValidationError
+from src.infrastructure.logging import get_logger
 from src.presentation.api.base.schemas import CamelModel
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class FieldError(CamelModel):
@@ -27,8 +27,23 @@ class ValidationErrorResponse(CamelModel):
     errors: list[FieldError]
 
 
-def custom_exception_handler(_: Request, exc: Exception) -> Response[ErrorResponse]:
-    logger.exception("Internal Server Error", exc_info=exc)
+def _request_context(request: Request) -> dict[str, str]:
+    return {
+        "request_method": request.method,
+        "request_path": request.url.path,
+        "request_query": request.url.query,
+    }
+
+
+def custom_exception_handler(
+    request: Request, exc: Exception
+) -> Response[ErrorResponse]:
+    logger.exception(
+        event="internal_server_error",
+        message="Internal server error",
+        error_type=type(exc).__name__,
+        **_request_context(request),
+    )
 
     return Response(
         ErrorResponse(
@@ -63,9 +78,15 @@ def validation_error_handler(
 
 
 def application_error_handler(
-    _: Request, exc: ApplicationError
+    request: Request, exc: ApplicationError
 ) -> Response[ErrorResponse]:
-    logger.exception(exc)
+    logger.exception(
+        event="application_error",
+        message="Application error",
+        error_message=exc.message,
+        status_code=exc.status_code,
+        **_request_context(request),
+    )
 
     return Response(
         ErrorResponse(detail=exc.message, status_code=exc.status_code),

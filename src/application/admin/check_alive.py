@@ -1,7 +1,6 @@
 import asyncio
 from collections.abc import AsyncGenerator
 from dataclasses import dataclass
-import logging
 
 from aiogram import Bot
 from aiogram.enums import ChatAction
@@ -12,8 +11,9 @@ from aiogram.exceptions import (
 )
 
 from src.domain.admin import AdminRepository
+from src.infrastructure.logging import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 BATCH_SIZE = 20
 PROGRESS_INTERVAL = 100
@@ -64,16 +64,29 @@ class CheckAliveInteractor:
                 return UserCheckResult(
                     user_id=user_id, success=False, error_type="deleted"
                 )
-            logger.warning("TelegramBadRequest for user %d: %s", user_id, ex)
+            logger.warning(
+                event="telegram_bad_request_during_alive_check",
+                message="Telegram returned bad request during alive check",
+                user_id=user_id,
+                error=str(ex),
+            )
             return UserCheckResult(user_id=user_id, success=False, error_type="other")
         except TelegramRetryAfter as ex:
-            logger.warning("Rate limited, waiting %d seconds", ex.retry_after)
+            logger.warning(
+                event="telegram_alive_check_rate_limited",
+                message="Alive check was rate limited",
+                retry_after=ex.retry_after,
+            )
             await asyncio.sleep(ex.retry_after)
             return UserCheckResult(
                 user_id=user_id, success=False, error_type="rate_limited"
             )
         except Exception:
-            logger.exception("Unexpected error checking user %d", user_id)
+            logger.exception(
+                event="telegram_alive_check_failed",
+                message="Unexpected error checking user",
+                user_id=user_id,
+            )
             return UserCheckResult(user_id=user_id, success=False, error_type="other")
 
     async def _process_batch(

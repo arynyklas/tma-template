@@ -1,7 +1,5 @@
 import asyncio
 from contextlib import suppress
-import logging
-import sys
 
 from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
@@ -18,8 +16,12 @@ from src.infrastructure.di import (
     interactor_providers,
 )
 from src.infrastructure.i18n import DEFAULT_LANGUAGE, TranslatorHub
+from src.infrastructure.logging import configure_logging, get_logger
+from src.infrastructure.telemetry import init_sentry
 from src.presentation.bot.middleware.user_and_locale import UserAndLocaleMiddleware
 from src.presentation.bot.routers import setup_routers
+
+logger = get_logger(__name__)
 
 
 async def notify_admins_on_startup(
@@ -31,11 +33,20 @@ async def notify_admins_on_startup(
         try:
             await bot.send_message(chat_id=admin_id, text=i18n.bot_started())
         except TelegramAPIError as ex:
-            logging.warning("Failed to notify admin %s: %s", admin_id, ex)
+            logger.warning(
+                event="admin_notification_failed",
+                message="Failed to notify admin",
+                admin_id=admin_id,
+                error=str(ex),
+            )
 
 
 async def main() -> None:
+    configure_logging("tma-template-bot")
+
     config = load_config()
+    init_sentry(config.telemetry, service_name="tma-template-bot")
+
     bot = Bot(
         token=config.telegram.bot_token,
         default=DefaultBotProperties(parse_mode=ParseMode.HTML),
@@ -72,7 +83,5 @@ async def main() -> None:
 
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO, stream=sys.stdout)
-
     with suppress(KeyboardInterrupt):
         asyncio.run(main())

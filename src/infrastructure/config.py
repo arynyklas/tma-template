@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, HttpUrl
 import yaml
 
 
@@ -30,6 +30,18 @@ class AuthConfig(BaseModel):
     access_token_expire_minutes: int
 
 
+class TelemetryConfig(BaseModel):
+    alloy_base: HttpUrl = Field(description="Base URL for Alloy OTLP HTTP receiver")
+    export_metrics: bool = True
+    export_traces: bool = True
+    sentry_dsn: HttpUrl | None = Field(default=None, description="Sentry DSN")
+    sentry_traces_sample_rate: float = Field(default=1.0, ge=0.0, le=1.0)
+    sentry_ca_certs: str | None = Field(
+        default=None,
+        description="Path to custom CA certificate for Sentry SSL verification",
+    )
+
+
 class TelegramConfig(BaseModel):
     bot_token: str
     admin_ids: list[int]
@@ -42,6 +54,7 @@ class TelegramConfig(BaseModel):
 class Config(BaseModel):
     postgres: PostgresConfig
     auth: AuthConfig
+    telemetry: TelemetryConfig
     telegram: TelegramConfig
 
 
