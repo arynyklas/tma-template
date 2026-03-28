@@ -6,7 +6,7 @@ from aiogram.types import Message, User
 import pytest
 
 from src.application.referral.process import ProcessReferralInteractor
-from src.application.user.dtos import CreateUserOutputDTO
+from src.application.user.dtos import SyncTelegramUserOutputDTO
 from src.infrastructure.i18n import TranslatorHub, create_translator_hub
 from src.presentation.bot.routers.commands import command_start_handler
 
@@ -56,7 +56,7 @@ class TestCommandStartHandler:
         mock_process_referral = AsyncMock()
         mock_container = self._create_mock_container(mock_process_referral)
         i18n = hub.get_translator_by_locale("en")
-        user = CreateUserOutputDTO(
+        user = SyncTelegramUserOutputDTO(
             id=123456,
             username="testuser",
             first_name="John",
@@ -84,7 +84,7 @@ class TestCommandStartHandler:
         mock_process_referral = AsyncMock()
         mock_container = self._create_mock_container(mock_process_referral)
         i18n = hub.get_translator_by_locale("ru")
-        user = CreateUserOutputDTO(
+        user = SyncTelegramUserOutputDTO(
             id=123456,
             username="testuser",
             first_name="Иван",
@@ -113,7 +113,7 @@ class TestCommandStartHandler:
         mock_container = self._create_mock_container(mock_process_referral)
         # Middleware would fall back to English for unsupported language
         i18n = hub.get_translator_by_locale("en")
-        user = CreateUserOutputDTO(
+        user = SyncTelegramUserOutputDTO(
             id=123456,
             username="testuser",
             first_name="Hans",

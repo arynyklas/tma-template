@@ -5,19 +5,17 @@ from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
 from aiogram.exceptions import TelegramAPIError
-from dishka import make_async_container
 from dishka.integrations.aiogram import setup_dishka
 
-from src.infrastructure.config import Config, load_config
+from src.infrastructure.config import Config
 from src.infrastructure.di import (
     AuthProvider,
     DBProvider,
     I18nProvider,
-    interactor_providers,
+    bootstrap_service,
 )
 from src.infrastructure.i18n import DEFAULT_LANGUAGE, TranslatorHub
-from src.infrastructure.logging import configure_logging, get_logger
-from src.infrastructure.telemetry import init_sentry
+from src.infrastructure.logging import get_logger
 from src.presentation.bot.middleware.user_and_locale import UserAndLocaleMiddleware
 from src.presentation.bot.routers import setup_routers
 
@@ -42,38 +40,28 @@ async def notify_admins_on_startup(
 
 
 async def main() -> None:
-    configure_logging("tma-template-bot")
-
-    config = load_config()
-    init_sentry(config.telemetry, service_name="tma-template-bot")
+    bootstrap = bootstrap_service(
+        "tma-template-bot",
+        AuthProvider(),
+        DBProvider(),
+        I18nProvider(),
+    )
+    config = bootstrap.config
 
     bot = Bot(
         token=config.telegram.bot_token,
         default=DefaultBotProperties(parse_mode=ParseMode.HTML),
     )
 
-    interactor_provider_instances = [
-        interactor() for interactor in interactor_providers
-    ]
-
     dp = Dispatcher()
     main_router = setup_routers()
     dp.include_router(main_router)
 
-    container = make_async_container(
-        AuthProvider(),
-        DBProvider(),
-        I18nProvider(),
-        *interactor_provider_instances,
-        context={Config: config},
-    )
-    setup_dishka(container=container, router=dp)
+    setup_dishka(container=bootstrap.container, router=dp)
 
-    async with container() as request_container:
-        # Get TranslatorHub and admin notification
+    async with bootstrap.container() as request_container:
         hub = await request_container.get(TranslatorHub)
 
-        # Register I18n middleware
         dp.message.middleware(UserAndLocaleMiddleware())
         dp.callback_query.middleware(UserAndLocaleMiddleware())
 

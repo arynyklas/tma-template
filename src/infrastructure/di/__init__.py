@@ -1,3 +1,4 @@
+from src.infrastructure.bootstrap import ServiceBootstrap, bootstrap_service
 from src.infrastructure.i18n import I18nProvider
 
 from .auth import AuthProvider
@@ -13,6 +14,8 @@ __all__ = [
     "AuthProvider",
     "DBProvider",
     "I18nProvider",
+    "ServiceBootstrap",
+    "bootstrap_service",
     "infra_providers",
     "interactor_providers",
 ]

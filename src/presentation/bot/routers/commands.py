@@ -9,7 +9,7 @@ from src.application.referral.process import (
     ProcessReferralInputDTO,
     ProcessReferralInteractor,
 )
-from src.application.user.dtos import CreateUserOutputDTO
+from src.application.user.dtos import SyncTelegramUserOutputDTO
 from src.infrastructure.i18n import TranslatorRunner
 from src.presentation.bot.utils.markups.settings import (
     get_onboarding_language_keyboard,
@@ -55,7 +55,7 @@ async def command_start_handler(
     command: CommandObject,
     process_referral: FromDishka[ProcessReferralInteractor],
     i18n: TranslatorRunner,
-    user: CreateUserOutputDTO,
+    user: SyncTelegramUserOutputDTO,
 ) -> None:
     """Handle /start command."""
     if user.is_new:

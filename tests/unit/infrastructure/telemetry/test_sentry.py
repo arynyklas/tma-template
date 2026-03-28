@@ -117,8 +117,8 @@ def test_create_app_initializes_sentry(monkeypatch) -> None:
     init_mock = Mock()
     config = load_config("config-test.yaml")
 
-    monkeypatch.setattr("src.presentation.api.app.init_sentry", init_mock)
-    monkeypatch.setattr("src.presentation.api.app.load_config", lambda: config)
+    monkeypatch.setattr("src.infrastructure.bootstrap.init_sentry", init_mock)
+    monkeypatch.setattr("src.infrastructure.bootstrap.load_config", lambda: config)
 
     create_app()
 
@@ -129,8 +129,8 @@ def test_bot_main_initializes_sentry(monkeypatch) -> None:
     init_mock = Mock()
     config = load_config("config-test.yaml")
 
-    monkeypatch.setattr("src.presentation.bot.main.init_sentry", init_mock)
-    monkeypatch.setattr("src.presentation.bot.main.load_config", lambda: config)
+    monkeypatch.setattr("src.infrastructure.bootstrap.init_sentry", init_mock)
+    monkeypatch.setattr("src.infrastructure.bootstrap.load_config", lambda: config)
 
     async def fake_notify_admins_on_startup(*_args, **_kwargs) -> None:
         return None
