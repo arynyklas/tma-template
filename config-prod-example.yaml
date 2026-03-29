@@ -9,12 +9,12 @@ postgres:
   user: "dev_user"
   password: "dev_password"
   db: "template_app"
-  # pool_size: 30
-  # pool_timeout: 30
-  # pool_recycle: 3600
-  # max_overflow: 20
-  # pool_pre_ping: true
-  # echo_pool: false
+  pool_size: 30
+  pool_timeout: 30
+  pool_recycle: 3600
+  max_overflow: 20
+  pool_pre_ping: true
+  echo_pool: false
 
 auth:
   secret_key: "2b8f131dfcf30c00ba5b28676dac2dcddd7c4a75637f03a4b2e57ca95810dbcc"  # openssl rand -hex 32
