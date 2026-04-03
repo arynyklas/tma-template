@@ -37,7 +37,7 @@ def user_id_from_token(token: Token) -> UserId:
 def decode_token_to_user_id(encoded_token: str, config: Config) -> UserId:
     token = Token.decode(
         encoded_token=encoded_token,
-        secret=config.auth.secret_key,
+        secret=config.auth.secret_key.get_secret_value(),
         algorithm=config.auth.algorithm,
     )
     return user_id_from_token(token)
@@ -85,7 +85,7 @@ def create_jwt_auth(config: Config) -> JWTAuth[UserId, Token]:
         return user_id_from_token(token)
 
     return JWTAuth[UserId, Token](
-        token_secret=config.auth.secret_key,
+        token_secret=config.auth.secret_key.get_secret_value(),
         algorithm=config.auth.algorithm,
         retrieve_user_handler=retrieve_user_handler,
         exclude=SCHEMA_AUTH_EXCLUDE_PATTERNS,

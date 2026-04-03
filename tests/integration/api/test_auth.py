@@ -25,7 +25,7 @@ class TestAuth:
         if not test_config.telegram.tg_init_data:
             raise ValueError("Telegram init data must be provided in test config")
 
-        data = {"initData": test_config.telegram.tg_init_data}
+        data = {"initData": test_config.telegram.tg_init_data.get_secret_value()}
 
         response = await test_client.post(self.url, json=data)
 

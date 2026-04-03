@@ -1,6 +1,7 @@
 from datetime import UTC, datetime, timedelta
 from unittest.mock import Mock
 
+from dature.fields.secret_str import SecretStr
 from litestar import Request
 from litestar.exceptions import NotAuthorizedException
 from litestar.security.jwt import Token
@@ -23,7 +24,7 @@ from src.presentation.api.security import (
 def mock_config() -> Mock:
     config = Mock(spec=Config)
     auth_config = Mock()
-    auth_config.secret_key = "3d1b2a2127de6f65804364813b3107b2"
+    auth_config.secret_key = SecretStr("3d1b2a2127de6f65804364813b3107b2")
     auth_config.algorithm = "HS256"
     config.auth = auth_config
     return config
@@ -35,7 +36,7 @@ def _create_token(config: Config, sub: str = "12345") -> str:
         exp=datetime.now(UTC) + timedelta(minutes=30),
     )
     return token.encode(
-        secret=config.auth.secret_key,
+        secret=config.auth.secret_key.get_secret_value(),
         algorithm=config.auth.algorithm,
     )
 
@@ -74,7 +75,7 @@ class TestJWTAuthFactory:
     ) -> None:
         jwt_auth = create_jwt_auth(mock_config)
 
-        assert jwt_auth.token_secret == mock_config.auth.secret_key
+        assert jwt_auth.token_secret == mock_config.auth.secret_key.get_secret_value()
         assert jwt_auth.algorithm == mock_config.auth.algorithm
         assert jwt_auth.exclude == SCHEMA_AUTH_EXCLUDE_PATTERNS
         assert jwt_auth.openapi_security_scheme_name == "BearerToken"

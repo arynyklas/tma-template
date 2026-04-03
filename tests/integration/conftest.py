@@ -1,4 +1,5 @@
 from collections.abc import AsyncGenerator, AsyncIterator
+from dataclasses import replace
 import os
 
 from dishka import AsyncContainer, make_async_container
@@ -126,14 +127,12 @@ async def dishka_container_for_tests(
     await clear_db_data(sqlalchemy_engine)
 
     # Create worker-specific config for database isolation
-    worker_db_url = get_worker_database_url(test_config.postgres.url)
+    worker_db_url = get_worker_database_url(test_config.postgres.get_url())
     worker_db_name = worker_db_url.split("/")[-1]
 
     # Create a modified postgres config with worker-specific database name
-    worker_postgres_config = test_config.postgres.model_copy(
-        update={"db": worker_db_name}
-    )
-    worker_config = test_config.model_copy(update={"postgres": worker_postgres_config})
+    worker_postgres_config = replace(test_config.postgres, db=worker_db_name)
+    worker_config = replace(test_config, postgres=worker_postgres_config)
 
     interactor_provider_instances = [
         interactor() for interactor in interactor_providers
@@ -145,20 +144,22 @@ async def dishka_container_for_tests(
         *interactor_provider_instances,
         context={Config: worker_config, AuthService: test_auth_service},
     )
+
     yield container
+
     await container.close()
 
 
 @pytest.fixture(scope="session")
 async def sqlalchemy_engine(test_config: Config) -> AsyncGenerator[AsyncEngine]:
     # Get worker-specific database URL
-    worker_db_url = get_worker_database_url(test_config.postgres.url)
+    worker_db_url = get_worker_database_url(test_config.postgres.get_url())
 
     # Create engine with worker-specific database
     engine = create_async_engine(worker_db_url, echo=False)
 
     # Create the worker-specific database if it doesn't exist
-    await create_worker_database(test_config.postgres.url, worker_db_url)
+    await create_worker_database(test_config.postgres.get_url(), worker_db_url)
 
     # Set up schema in the worker database
     await setup_db_schema(engine)

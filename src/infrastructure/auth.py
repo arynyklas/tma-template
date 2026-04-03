@@ -16,7 +16,7 @@ class AuthServiceImpl(AuthService):
     def validate_init_data(self, init_data: str) -> InitDataDTO:
         try:
             parsed_data = safe_parse_webapp_init_data(
-                self.config.telegram.bot_token, init_data
+                self.config.telegram.bot_token.get_secret_value(), init_data
             )
         except ValueError as ex:
             error_msg = f"Invalid init data '{init_data}'"
@@ -46,6 +46,6 @@ class AuthServiceImpl(AuthService):
             + timedelta(minutes=self.config.auth.access_token_expire_minutes),
         )
         return token.encode(
-            secret=self.config.auth.secret_key,
+            secret=self.config.auth.secret_key.get_secret_value(),
             algorithm=self.config.auth.algorithm,
         )

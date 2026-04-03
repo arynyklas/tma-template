@@ -1,8 +1,8 @@
+from dataclasses import dataclass
 from http import HTTPStatus
 
 from litestar import Request, Response
 from litestar.exceptions import ClientException
-from pydantic import ValidationError as PydanticValidationError
 
 from src.application.common.exceptions import ApplicationError, ValidationError
 from src.infrastructure.logging import get_logger
@@ -11,16 +11,19 @@ from src.presentation.api.base.schemas import CamelModel
 logger = get_logger(__name__)
 
 
+@dataclass
 class FieldError(CamelModel):
     field: str
     message: str
 
 
+@dataclass
 class ErrorResponse(CamelModel):
     detail: str
     status_code: int
 
 
+@dataclass
 class ValidationErrorResponse(CamelModel):
     detail: str
     status_code: int
@@ -91,26 +94,6 @@ def application_error_handler(
     return Response(
         ErrorResponse(detail=exc.message, status_code=exc.status_code),
         status_code=exc.status_code,
-    )
-
-
-def pydantic_validation_error_handler(
-    _: Request, exc: PydanticValidationError
-) -> Response[ValidationErrorResponse]:
-    field_errors = [
-        FieldError(
-            field=" -> ".join(str(loc) for loc in e["loc"]),
-            message=e["msg"],
-        )
-        for e in exc.errors()
-    ]
-    return Response(
-        ValidationErrorResponse(
-            detail="Validation error",
-            status_code=HTTPStatus.BAD_REQUEST,
-            errors=field_errors,
-        ),
-        status_code=HTTPStatus.BAD_REQUEST,
     )
 
 

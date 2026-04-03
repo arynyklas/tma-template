@@ -16,7 +16,7 @@ def create_pool(db_config: PostgresConfig) -> async_sessionmaker[AsyncSession]:
 
 def create_engine(db_config: PostgresConfig) -> AsyncEngine:
     return create_async_engine(
-        url=make_url(db_config.url),
+        url=make_url(db_config.get_url()),
         echo=db_config.echo,
         pool_size=db_config.pool_size,
         pool_timeout=db_config.pool_timeout,

@@ -49,7 +49,7 @@ async def main() -> None:
     config = bootstrap.config
 
     bot = Bot(
-        token=config.telegram.bot_token,
+        token=config.telegram.bot_token.get_secret_value(),
         default=DefaultBotProperties(parse_mode=ParseMode.HTML),
     )
 
