@@ -1,13 +1,19 @@
+from dataclasses import dataclass
 import os
 from pathlib import Path
+from typing import Annotated
 
-from pydantic import BaseModel, Field, HttpUrl
-import yaml
+from dature import Source, load
+from dature.validators.number import Ge, Gt, Le, Lt
+from dature.validators.string import MinLength
+
+from src.infrastructure.validators import HttpUrl, Url
 
 
-class PostgresConfig(BaseModel):
+@dataclass
+class PostgresConfig:
     host: str
-    port: int = Field(gt=0, lt=65536)
+    port: Annotated[int, Gt(value=0), Lt(value=65536)]
     user: str
     password: str
     db: str
@@ -24,34 +30,33 @@ class PostgresConfig(BaseModel):
         return f"postgresql+asyncpg://{self.user}:{self.password}@{self.host}:{self.port}/{self.db}"
 
 
-class AuthConfig(BaseModel):
-    secret_key: str = Field(min_length=32)
-    algorithm: str
-    access_token_expire_minutes: int
+@dataclass
+class AuthConfig:
+    secret_key: Annotated[str, MinLength(value=32)]
+    algorithm: Annotated[str, MinLength(value=1)]
+    access_token_expire_minutes: Annotated[int, Gt(value=0)]
 
 
-class TelemetryConfig(BaseModel):
-    alloy_base: HttpUrl = Field(description="Base URL for Alloy OTLP HTTP receiver")
+@dataclass
+class TelemetryConfig:
+    alloy_base: Annotated[str, Url()]
     export_metrics: bool = True
     export_traces: bool = True
-    sentry_dsn: HttpUrl | None = Field(default=None, description="Sentry DSN")
-    sentry_traces_sample_rate: float = Field(default=1.0, ge=0.0, le=1.0)
-    sentry_ca_certs: str | None = Field(
-        default=None,
-        description="Path to custom CA certificate for Sentry SSL verification",
-    )
+    sentry_dsn: Annotated[str, HttpUrl()] | None = None
+    sentry_traces_sample_rate: Annotated[float, Ge(value=0.0), Le(value=1.0)] = 1.0
+    sentry_ca_certs: str | None = None
 
 
-class TelegramConfig(BaseModel):
+@dataclass
+class TelegramConfig:
     bot_token: str
     admin_ids: list[int]
     bot_username: str
-    tg_init_data: str | None = Field(
-        default=None, description="Telegram init data for testing purposes"
-    )
+    tg_init_data: str | None = None
 
 
-class Config(BaseModel):
+@dataclass
+class Config:
     postgres: PostgresConfig
     auth: AuthConfig
     telemetry: TelemetryConfig
@@ -67,5 +72,4 @@ def load_config(file_name: str | None = None) -> Config:
     if not file_path.is_file():
         raise FileNotFoundError(f"Config file '{file_name}' not found")
 
-    with file_path.open("r") as file:
-        return Config.model_validate(yaml.safe_load(file))
+    return load(Source(file_=file_path), Config)

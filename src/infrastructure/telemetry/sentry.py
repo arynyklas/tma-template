@@ -42,7 +42,7 @@ def init_sentry(config: TelemetryConfig, *, service_name: str) -> None:
         return
 
     sentry_sdk.init(
-        dsn=str(config.sentry_dsn),
+        dsn=config.sentry_dsn,
         traces_sample_rate=config.sentry_traces_sample_rate,
         ca_certs=_build_sentry_ca_bundle(config.sentry_ca_certs),
         include_local_variables=True,

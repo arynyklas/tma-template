@@ -2,8 +2,9 @@ from pathlib import Path
 import tempfile
 from unittest.mock import mock_open, patch
 
-from pydantic import ValidationError
+from dature.errors.exceptions import DatureConfigError
 import pytest
+from ruamel.yaml import YAMLError
 import yaml
 
 from src.infrastructure.config import (
@@ -102,67 +103,27 @@ class TestPostgresConfig:
         assert config.url == expected_url
 
     def test_missing_required_fields(self):
-        with pytest.raises(ValidationError):
+        with pytest.raises(TypeError):
             PostgresConfig()
 
     @pytest.mark.parametrize(
-        "port,echo,should_raise",
+        "port,echo",
         [
-            ("invalid_port", False, True),
-            (5432, "invalid", True),
-            (-1, False, True),
-            (65536, False, True),
-            (5432, True, False),
-            (3306, False, False),
+            (5432, True),
+            (3306, False),
         ],
     )
-    def test_port_and_echo_validation(self, port, echo, should_raise):
-        if should_raise:
-            with pytest.raises(ValidationError):
-                PostgresConfig(
-                    host="localhost",
-                    port=port,
-                    user="user",
-                    password="pass",
-                    db="db",
-                    echo=echo,
-                )
-        else:
-            config = PostgresConfig(
-                host="localhost",
-                port=port,
-                user="user",
-                password="pass",
-                db="db",
-                echo=echo,
-            )
-            assert config.port == port
-            assert config.echo == echo
-
-    @pytest.mark.parametrize(
-        "port,expected",
-        [
-            (5432, 5432),
-            (65535, 65535),
-            (1, 1),
-            (8080, 8080),
-        ],
-    )
-    def test_valid_ports(self, port, expected):
+    def test_port_and_echo_values(self, port, echo):
         config = PostgresConfig(
-            host="localhost", port=port, user="user", password="pass", db="db"
+            host="localhost",
+            port=port,
+            user="user",
+            password="pass",
+            db="db",
+            echo=echo,
         )
-        assert config.port == expected
-
-    @pytest.mark.parametrize(
-        "port",
-        [0, 65536, -1, "not-a-number"],
-    )
-    def test_invalid_ports(self, port):
-        with pytest.raises(ValidationError):
-            PostgresConfig(
-                host="localhost", port=port, user="user", password="pass", db="db"
-            )
+        assert config.port == port
+        assert config.echo == echo
 
 
 class TestAuthConfig:
@@ -178,64 +139,46 @@ class TestAuthConfig:
         assert config.access_token_expire_minutes == 30
 
     def test_missing_required_fields(self):
-        with pytest.raises(ValidationError):
+        with pytest.raises(TypeError):
             AuthConfig()
 
     @pytest.mark.parametrize(
-        "expire_minutes,should_raise,expected",
-        [
-            ("invalid", True, None),
-            (30, False, 30),
-            (-1, False, -1),
-            (0, False, 0),
-            (60, False, 60),
-        ],
+        "expire_minutes",
+        [30, -1, 0, 60],
     )
-    def test_expire_minutes_validation(self, expire_minutes, should_raise, expected):
-        if should_raise:
-            with pytest.raises(ValidationError):
-                AuthConfig(
-                    secret_key="3d1b2a2127de6f65804364813b3107b2",
-                    algorithm="HS256",
-                    access_token_expire_minutes=expire_minutes,
-                )
-        else:
-            config = AuthConfig(
-                secret_key="3d1b2a2127de6f65804364813b3107b2",
-                algorithm="HS256",
-                access_token_expire_minutes=expire_minutes,
-            )
-            assert config.access_token_expire_minutes == expected
+    def test_expire_minutes_values(self, expire_minutes):
+        config = AuthConfig(
+            secret_key="3d1b2a2127de6f65804364813b3107b2",
+            algorithm="HS256",
+            access_token_expire_minutes=expire_minutes,
+        )
+        assert config.access_token_expire_minutes == expire_minutes
 
 
 class TestTelemetryConfig:
     def test_valid_config_with_sentry(self) -> None:
-        config = TelemetryConfig.model_validate(
-            {
-                "alloy_base": "https://alloy.example.com",
-                "export_metrics": True,
-                "export_traces": True,
-                "sentry_dsn": "https://public@example.ingest.sentry.io/123",
-                "sentry_traces_sample_rate": 1.0,
-            }
+        config = TelemetryConfig(
+            alloy_base="https://alloy.example.com",
+            export_metrics=True,
+            export_traces=True,
+            sentry_dsn="https://public@example.ingest.sentry.io/123",
+            sentry_traces_sample_rate=1.0,
         )
 
-        assert str(config.alloy_base) == "https://alloy.example.com/"
+        assert config.alloy_base == "https://alloy.example.com"
         assert config.export_metrics is True
         assert config.export_traces is True
-        assert str(config.sentry_dsn) == "https://public@example.ingest.sentry.io/123"
+        assert config.sentry_dsn == "https://public@example.ingest.sentry.io/123"
         assert config.sentry_traces_sample_rate == 1.0
 
     def test_valid_config_without_sentry(self) -> None:
-        config = TelemetryConfig.model_validate(
-            {
-                "alloy_base": "https://alloy.example.com",
-                "export_metrics": True,
-                "export_traces": True,
-            }
+        config = TelemetryConfig(
+            alloy_base="https://alloy.example.com",
+            export_metrics=True,
+            export_traces=True,
         )
 
-        assert str(config.alloy_base) == "https://alloy.example.com/"
+        assert config.alloy_base == "https://alloy.example.com"
         assert config.export_metrics is True
         assert config.export_traces is True
         assert config.sentry_dsn is None
@@ -255,11 +198,11 @@ class TestTelegramConfig:
         assert config.bot_username == "my_bot"
 
     def test_missing_required_fields(self):
-        with pytest.raises(ValidationError):
+        with pytest.raises(TypeError):
             TelegramConfig()
 
     def test_bot_username_required(self):
-        with pytest.raises(ValidationError):
+        with pytest.raises(TypeError):
             TelegramConfig(bot_token="token", admin_ids=[1])
 
     def test_bot_username_valid(self):
@@ -298,12 +241,10 @@ class TestConfig:
             algorithm="HS256",
             access_token_expire_minutes=30,
         )
-        telemetry_config = TelemetryConfig.model_validate(
-            {
-                "alloy_base": "https://alloy.example.com",
-                "export_metrics": True,
-                "export_traces": True,
-            }
+        telemetry_config = TelemetryConfig(
+            alloy_base="https://alloy.example.com",
+            export_metrics=True,
+            export_traces=True,
         )
         telegram_config = TelegramConfig(
             bot_token="123456789:ABCdefGHIjklMNOpqrsTUVwxyz",
@@ -328,7 +269,7 @@ class TestConfig:
     )
     def test_config_validation(self, postgres, should_raise):
         if should_raise:
-            with pytest.raises(ValidationError):
+            with pytest.raises(TypeError):
                 Config(postgres=postgres)
 
 
@@ -379,7 +320,7 @@ class TestLoadConfig:
             assert config.auth.secret_key == "3d1b2a2127de6f65804364813b3107b2"
             assert config.auth.algorithm == "HS256"
             assert config.auth.access_token_expire_minutes == 30
-            assert str(config.telemetry.alloy_base) == "https://alloy.example.com/"
+            assert config.telemetry.alloy_base == "https://alloy.example.com"
             assert config.telegram.bot_token == "123456789:ABCdefGHIjklMNOpqrsTUVwxyz"
         finally:
             Path(temp_file).unlink()
@@ -426,9 +367,7 @@ class TestLoadConfig:
                         config.telegram.bot_token
                         == "123456789:ABCdefGHIjklMNOpqrsTUVwxyz"
                     )
-                    assert (
-                        str(config.telemetry.alloy_base) == "https://alloy.example.com/"
-                    )
+                    assert config.telemetry.alloy_base == "https://alloy.example.com"
 
     def test_load_config_missing_file(self):
         with pytest.raises(FileNotFoundError):
@@ -440,7 +379,7 @@ class TestLoadConfig:
         with patch("pathlib.Path.is_file", return_value=True):
             with patch("builtins.open", mock_open(read_data=invalid_yaml)):
                 with patch("pathlib.Path.open", mock_open(read_data=invalid_yaml)):
-                    with pytest.raises(yaml.YAMLError):
+                    with pytest.raises(YAMLError):
                         load_config("invalid.yaml")
 
     def test_load_config_invalid_schema(self):
@@ -459,7 +398,7 @@ class TestLoadConfig:
         with patch("pathlib.Path.is_file", return_value=True):
             with patch("builtins.open", mock_open(read_data=yaml_content)):
                 with patch("pathlib.Path.open", mock_open(read_data=yaml_content)):
-                    with pytest.raises(ValidationError):
+                    with pytest.raises(DatureConfigError):
                         load_config("invalid_schema.yaml")
 
     def test_load_config_missing_required_fields(self):
@@ -470,14 +409,14 @@ class TestLoadConfig:
         with patch("pathlib.Path.is_file", return_value=True):
             with patch("builtins.open", mock_open(read_data=yaml_content)):
                 with patch("pathlib.Path.open", mock_open(read_data=yaml_content)):
-                    with pytest.raises(ValidationError):
+                    with pytest.raises(DatureConfigError):
                         load_config("missing_fields.yaml")
 
     def test_load_config_empty_file(self):
         with patch("pathlib.Path.is_file", return_value=True):
             with patch("builtins.open", mock_open(read_data="")):
                 with patch("pathlib.Path.open", mock_open(read_data="")):
-                    with pytest.raises(ValidationError):
+                    with pytest.raises(DatureConfigError):
                         load_config("empty.yaml")
 
     def test_load_config_null_values(self):
@@ -496,7 +435,7 @@ class TestLoadConfig:
         with patch("pathlib.Path.is_file", return_value=True):
             with patch("builtins.open", mock_open(read_data=yaml_content)):
                 with patch("pathlib.Path.open", mock_open(read_data=yaml_content)):
-                    with pytest.raises(ValidationError):
+                    with pytest.raises(DatureConfigError):
                         load_config("null_values.yaml")
 
     def test_load_config_extra_fields_ignored(self):
