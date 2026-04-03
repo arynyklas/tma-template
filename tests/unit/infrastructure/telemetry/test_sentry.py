@@ -3,6 +3,7 @@ from pathlib import Path
 from unittest.mock import Mock
 
 import certifi
+from dature.fields.secret_str import SecretStr
 import pytest
 
 from src.infrastructure.config import TelemetryConfig, load_config
@@ -42,7 +43,7 @@ def test_init_sentry_configures_sdk_with_full_tracing(monkeypatch) -> None:
         alloy_base="https://alloy.example.com",
         export_metrics=True,
         export_traces=True,
-        sentry_dsn="https://public@example.ingest.sentry.io/123",
+        sentry_dsn=SecretStr("https://public@example.ingest.sentry.io/123"),
         sentry_traces_sample_rate=1.0,
     )
     init_sentry(config, service_name="tma-template-api")
@@ -63,7 +64,7 @@ def test_init_sentry_enables_local_variable_capture(monkeypatch) -> None:
         alloy_base="https://alloy.example.com",
         export_metrics=True,
         export_traces=True,
-        sentry_dsn="https://public@example.ingest.sentry.io/123",
+        sentry_dsn=SecretStr("https://public@example.ingest.sentry.io/123"),
     )
     init_sentry(config, service_name="tma-template-api")
 
@@ -89,7 +90,7 @@ def test_init_sentry_merges_custom_ca_bundle_with_default_trust_store(
         alloy_base="https://alloy.example.com",
         export_metrics=True,
         export_traces=True,
-        sentry_dsn="https://public@example.ingest.sentry.io/123",
+        sentry_dsn=SecretStr("https://public@example.ingest.sentry.io/123"),
         sentry_ca_certs=str(custom_bundle),
     )
 

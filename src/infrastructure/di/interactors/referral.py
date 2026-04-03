@@ -21,7 +21,7 @@ class ReferralInteractorProvider(Provider):
         return ProcessReferralInteractor(
             user_repository=user_repository,
             transaction_manager=transaction_manager,
-            secret_key=config.auth.secret_key,
+            secret_key=config.auth.secret_key.get_secret_value(),
         )
 
     @provide
@@ -32,7 +32,7 @@ class ReferralInteractorProvider(Provider):
     ) -> GetReferralInfoInteractor:
         return GetReferralInfoInteractor(
             user_repository=user_repository,
-            secret_key=config.auth.secret_key,
+            secret_key=config.auth.secret_key.get_secret_value(),
         )
 
     @provide

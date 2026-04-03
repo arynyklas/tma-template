@@ -127,7 +127,7 @@ async def dishka_container_for_tests(
     await clear_db_data(sqlalchemy_engine)
 
     # Create worker-specific config for database isolation
-    worker_db_url = get_worker_database_url(test_config.postgres.url)
+    worker_db_url = get_worker_database_url(test_config.postgres.get_url())
     worker_db_name = worker_db_url.split("/")[-1]
 
     # Create a modified postgres config with worker-specific database name
@@ -153,13 +153,13 @@ async def dishka_container_for_tests(
 @pytest.fixture(scope="session")
 async def sqlalchemy_engine(test_config: Config) -> AsyncGenerator[AsyncEngine]:
     # Get worker-specific database URL
-    worker_db_url = get_worker_database_url(test_config.postgres.url)
+    worker_db_url = get_worker_database_url(test_config.postgres.get_url())
 
     # Create engine with worker-specific database
     engine = create_async_engine(worker_db_url, echo=False)
 
     # Create the worker-specific database if it doesn't exist
-    await create_worker_database(test_config.postgres.url, worker_db_url)
+    await create_worker_database(test_config.postgres.get_url(), worker_db_url)
 
     # Set up schema in the worker database
     await setup_db_schema(engine)

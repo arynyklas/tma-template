@@ -43,7 +43,7 @@ def _get_otel_config(config: Config) -> OpenTelemetryConfig:
         }
     )
 
-    alloy_base = str(config.telemetry.alloy_base).removesuffix("/")
+    alloy_base = str(config.telemetry.alloy_base.get_secret_value()).removesuffix("/")
 
     tracer_provider = TracerProvider(resource=resource)
     if config.telemetry.export_traces:

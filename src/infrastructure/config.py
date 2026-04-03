@@ -4,10 +4,11 @@ from pathlib import Path
 from typing import Annotated
 
 from dature import Source, load
+from dature.fields.secret_str import SecretStr
 from dature.validators.number import Ge, Gt, Le, Lt
 from dature.validators.string import MinLength
 
-from src.infrastructure.validators import HttpUrl, Url
+from src.infrastructure.validators import HttpUrl
 
 
 @dataclass
@@ -15,7 +16,7 @@ class PostgresConfig:
     host: str
     port: Annotated[int, Gt(value=0), Lt(value=65536)]
     user: str
-    password: str
+    password: SecretStr
     db: str
     echo: bool = False
     pool_size: int = 30
@@ -25,34 +26,33 @@ class PostgresConfig:
     pool_pre_ping: bool = True
     echo_pool: bool = False
 
-    @property
-    def url(self) -> str:
-        return f"postgresql+asyncpg://{self.user}:{self.password}@{self.host}:{self.port}/{self.db}"
+    def get_url(self) -> str:
+        return f"postgresql+asyncpg://{self.user}:{self.password.get_secret_value()}@{self.host}:{self.port}/{self.db}"
 
 
 @dataclass
 class AuthConfig:
-    secret_key: Annotated[str, MinLength(value=32)]
+    secret_key: Annotated[SecretStr, MinLength(value=32)]
     algorithm: Annotated[str, MinLength(value=1)]
     access_token_expire_minutes: Annotated[int, Gt(value=0)]
 
 
 @dataclass
 class TelemetryConfig:
-    alloy_base: Annotated[str, Url()]
+    alloy_base: Annotated[SecretStr, HttpUrl()]
     export_metrics: bool = True
     export_traces: bool = True
-    sentry_dsn: Annotated[str, HttpUrl()] | None = None
+    sentry_dsn: Annotated[SecretStr, HttpUrl()] | None = None
     sentry_traces_sample_rate: Annotated[float, Ge(value=0.0), Le(value=1.0)] = 1.0
     sentry_ca_certs: str | None = None
 
 
 @dataclass
 class TelegramConfig:
-    bot_token: str
+    bot_token: SecretStr
     admin_ids: list[int]
     bot_username: str
-    tg_init_data: str | None = None
+    tg_init_data: SecretStr | None = None
 
 
 @dataclass

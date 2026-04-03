@@ -1,6 +1,7 @@
 from datetime import UTC, datetime
 from unittest.mock import Mock, patch
 
+from dature.fields.secret_str import SecretStr
 from litestar.security.jwt import Token
 import pytest
 
@@ -16,13 +17,13 @@ class TestAuthServiceImpl:
     def mock_config(self):
         config = Mock(spec=Config)
         auth_config = Mock()
-        auth_config.secret_key = "3d1b2a2127de6f65804364813b3107b2"
+        auth_config.secret_key = SecretStr("3d1b2a2127de6f65804364813b3107b2")
         auth_config.algorithm = "HS256"
         auth_config.access_token_expire_minutes = 30
         config.auth = auth_config
 
         telegram_config = Mock()
-        telegram_config.bot_token = "test-bot-token"
+        telegram_config.bot_token = SecretStr("test-bot-token")
         config.telegram = telegram_config
 
         return config
@@ -57,7 +58,7 @@ class TestAuthServiceImpl:
 
         decoded = Token.decode(
             encoded_token=token,
-            secret=mock_config.auth.secret_key,
+            secret=mock_config.auth.secret_key.get_secret_value(),
             algorithm=mock_config.auth.algorithm,
         )
         assert decoded.sub == str(user_id)
@@ -138,7 +139,7 @@ class TestAuthServiceImpl:
         token = auth_service.create_access_token(user_id_value)
         decoded = Token.decode(
             encoded_token=token,
-            secret=mock_config.auth.secret_key,
+            secret=mock_config.auth.secret_key.get_secret_value(),
             algorithm=mock_config.auth.algorithm,
         )
 

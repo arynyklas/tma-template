@@ -2,6 +2,8 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from urllib.parse import urlparse
 
+from dature.fields.secret_str import SecretStr
+
 
 @dataclass(frozen=True, slots=True, kw_only=True)
 class Url:
@@ -9,11 +11,12 @@ class Url:
 
     error_message: str = "Value must be a valid URL with scheme and host"
 
-    def get_validator_func(self) -> Callable[[str], bool]:
-        def validate(val: str) -> bool:
+    def get_validator_func(self) -> Callable[[str | SecretStr], bool]:
+        def validate(val: str | SecretStr) -> bool:
+            raw = val.get_secret_value() if isinstance(val, SecretStr) else val
             try:
-                parsed = urlparse(val)
-            except ValueError:
+                parsed = urlparse(raw)
+            except (ValueError, AttributeError):
                 return False
             return bool(parsed.scheme and parsed.netloc)
 
@@ -32,11 +35,12 @@ class HttpUrl:
 
     error_message: str = "Value must be a valid HTTP(S) URL"
 
-    def get_validator_func(self) -> Callable[[str], bool]:
-        def validate(val: str) -> bool:
+    def get_validator_func(self) -> Callable[[str | SecretStr], bool]:
+        def validate(val: str | SecretStr) -> bool:
+            raw = val.get_secret_value() if isinstance(val, SecretStr) else val
             try:
-                parsed = urlparse(val)
-            except ValueError:
+                parsed = urlparse(raw)
+            except (ValueError, AttributeError):
                 return False
             return parsed.scheme in _HTTP_SCHEMES and bool(parsed.netloc)
 

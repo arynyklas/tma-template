@@ -17,7 +17,7 @@ logging.config.fileConfig(config.config_file_name)  # type: ignore
 target_metadata = base.BaseORMModel.metadata
 
 app_config = load_config()
-db_url = app_config.postgres.url
+db_url = app_config.postgres.get_url()
 config.set_main_option("sqlalchemy.url", db_url)
 
 

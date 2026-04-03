@@ -16,7 +16,7 @@ class TestUserProfile:
         if not test_config.telegram.tg_init_data:
             raise ValueError("Telegram init data must be provided in test config")
 
-        auth_data = {"initData": test_config.telegram.tg_init_data}
+        auth_data = {"initData": test_config.telegram.tg_init_data.get_secret_value()}
 
         response = await test_client.post("auth", json=auth_data)
         assert response.status_code == HTTPStatus.CREATED
