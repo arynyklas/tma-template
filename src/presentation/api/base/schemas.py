@@ -17,4 +17,8 @@ class CamelModel:
 class BaseRequestDTO[T: DataclassDTOData](DataclassDTO[T], CamelModel): ...
 
 
-class BaseResponseDTO[T: DataclassDTOData](DataclassDTO[T], CamelModel): ...
+class BaseResponseDTO[T: DataclassDTOData](DataclassDTO[T], CamelModel):
+    config = DTOConfig(
+        rename_strategy="camel",
+        max_nested_depth=3,
+    )
