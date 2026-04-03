@@ -13,7 +13,6 @@ from opentelemetry.sdk.metrics.export import PeriodicExportingMetricReader
 from opentelemetry.sdk.resources import SERVICE_NAME, Resource
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
-from pydantic import ValidationError as PydanticValidationError
 
 from src.application.auth.exceptions import InvalidInitDataError
 from src.application.common.exceptions import ApplicationError, ValidationError
@@ -28,7 +27,6 @@ from .exception import (
     custom_exception_handler,
     exception_logs_handler,
     litestar_error_handler,
-    pydantic_validation_error_handler,
     validation_error_handler,
     value_error_handler,
 )
@@ -104,7 +102,6 @@ def prepare_app(config: Config) -> Litestar:
             ClientException: litestar_error_handler,
             ApplicationError: application_error_handler,
             ValidationError: validation_error_handler,
-            PydanticValidationError: pydantic_validation_error_handler,
             ValueError: value_error_handler,
             TypeError: value_error_handler,
             InvalidInitDataError: exception_logs_handler,
