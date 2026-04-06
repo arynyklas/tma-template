@@ -20,10 +20,7 @@ async def auth_user_handler(
     data: AuthTgRequest,
     interactor: FromDishka[AuthTgInteractor],
 ) -> AuthTgOutputDTO:
-    logger.info(
-        event="telegram_auth_requested",
-        message="Telegram authentication requested",
-    )
+    """Authenticate a user using Telegram Web App's init data."""
 
     response = await interactor(AuthTgInputDTO(data.init_data))
 

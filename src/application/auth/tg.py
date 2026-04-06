@@ -4,6 +4,9 @@ from src.application.common.interactor import Interactor
 from src.application.common.transaction import TransactionManager
 from src.application.interfaces.auth import AuthService
 from src.application.user.service import TelegramUserSyncData, UserService
+from src.infrastructure.logging import get_logger
+
+logger = get_logger(__name__)
 
 
 @dataclass
@@ -42,8 +45,16 @@ class AuthTgInteractor(Interactor[AuthTgInputDTO, AuthTgOutputDTO]):
         await self.transaction_manager.commit()
 
         access_token = self.auth_service.create_access_token(
-            parsed_data.user_id,
+            user_id=parsed_data.user_id
         )
+
+        logger.info(
+            event="telegram_mini_app_user_authorized",
+            message="TMA user authorized",
+            user_id=parsed_data.user_id,
+            auth_date=parsed_data.auth_date.isoformat(),
+        )
+
         return AuthTgOutputDTO(
             access_token=access_token,
         )

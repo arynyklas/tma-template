@@ -6,6 +6,9 @@ from src.domain.user import (
     UserRepository,
 )
 from src.domain.user.vo import UserId
+from src.infrastructure.logging import get_logger
+
+logger = get_logger(__name__)
 
 
 @dataclass
@@ -35,6 +38,12 @@ class GetUserProfileInteractor(
 
         if not user:
             raise UserNotFoundError(data.user_id)
+
+        logger.info(
+            event="user_profile_requested",
+            message="Authenticated user profile requested",
+            user_id=user.id,
+        )
 
         return GetUserProfileOutputDTO(
             id=user.id.value,

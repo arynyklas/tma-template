@@ -45,6 +45,7 @@ class TestAuthTgInteractor:
             last_name="User",
             start_param=None,
             ui_language_code="en",
+            auth_date=datetime(2024, 1, 1, 12, 0, 0, tzinfo=UTC),
         )
 
     @pytest.fixture
@@ -92,7 +93,7 @@ class TestAuthTgInteractor:
         mock_user_service.sync_telegram_user.assert_awaited_once()
         mock_transaction_manager.commit.assert_called_once()
         mock_auth_service.create_access_token.assert_called_once_with(
-            sample_init_data_dto.user_id
+            user_id=sample_init_data_dto.user_id
         )
 
     async def test_auth_service_validate_exception_propagated(
