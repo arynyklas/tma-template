@@ -1,5 +1,6 @@
 from abc import abstractmethod
 from dataclasses import dataclass
+from datetime import datetime
 from typing import Protocol
 
 
@@ -11,6 +12,7 @@ class InitDataDTO:
     last_name: str | None
     start_param: str | None
     ui_language_code: str | None
+    auth_date: datetime
 
 
 class AuthService(Protocol):

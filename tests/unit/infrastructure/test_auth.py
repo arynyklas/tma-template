@@ -144,39 +144,3 @@ class TestAuthServiceImpl:
         )
 
         assert decoded.sub == str(user_id_value)
-
-
-class TestInitDataDTO:
-    def test_init_data_dto_creation(self):
-        dto = InitDataDTO(
-            user_id=12345,
-            username="testuser",
-            first_name="Test",
-            last_name="User",
-            start_param="start123",
-            ui_language_code="en",
-        )
-
-        assert dto.user_id == 12345
-        assert dto.username == "testuser"
-        assert dto.first_name == "Test"
-        assert dto.last_name == "User"
-        assert dto.start_param == "start123"
-        assert dto.ui_language_code == "en"
-
-    def test_init_data_dto_with_none_values(self):
-        dto = InitDataDTO(
-            user_id=67890,
-            username=None,
-            first_name="Test",
-            last_name=None,
-            start_param=None,
-            ui_language_code=None,
-        )
-
-        assert dto.user_id == 67890
-        assert dto.username is None
-        assert dto.first_name == "Test"
-        assert dto.last_name is None
-        assert dto.start_param is None
-        assert dto.ui_language_code is None

@@ -37,6 +37,7 @@ class AuthServiceImpl(AuthService):
                 if parsed_data.user.language_code
                 else None
             ),
+            auth_date=parsed_data.auth_date,
         )
 
     def create_access_token(self, user_id: int) -> str:
