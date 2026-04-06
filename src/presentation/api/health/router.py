@@ -1,14 +1,11 @@
 from litestar import Router, get
 
-from src.infrastructure.logging import get_logger
 from src.presentation.api.security import PUBLIC_ROUTE
 
 from .schemas import (
     HealthCheckResponse,
     HealthCheckResponseSchema,
 )
-
-logger = get_logger(__name__)
 
 
 @get("/", return_dto=HealthCheckResponseSchema, **PUBLIC_ROUTE)

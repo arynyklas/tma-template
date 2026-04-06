@@ -2,7 +2,6 @@ from dishka.integrations.litestar import FromDishka, inject
 from litestar import Router, post
 
 from src.application.auth.tg import AuthTgInputDTO, AuthTgInteractor, AuthTgOutputDTO
-from src.infrastructure.logging import get_logger
 from src.presentation.api.security import PUBLIC_ROUTE
 
 from .schemas import (
@@ -10,8 +9,6 @@ from .schemas import (
     AuthTgRequestSchema,
     AuthTgResponseSchema,
 )
-
-logger = get_logger(__name__)
 
 
 @post("/", dto=AuthTgRequestSchema, return_dto=AuthTgResponseSchema, **PUBLIC_ROUTE)
